@@ -24,14 +24,58 @@ Conventions (identical to the book's figures)
 from __future__ import annotations
 
 from dataclasses import dataclass, field
+import sys
 import numpy as np
 import matplotlib
 import matplotlib.pyplot as plt
 import matplotlib.patches as patches
 
-# Render Chinese plot titles/labels correctly on Windows.
-matplotlib.rcParams["font.sans-serif"] = ["Microsoft YaHei", "SimHei", "DejaVu Sans"]
+# Render Chinese plot titles/labels correctly. Locally (Windows/macOS/Linux) we
+# rely on an installed CJK font; in the browser (Pyodide/WASM) none exists, so
+# `_ensure_cjk_font` below downloads one once.
+matplotlib.rcParams["font.sans-serif"] = [
+    "Microsoft YaHei", "SimHei", "PingFang SC", "Noto Sans CJK SC",
+    "WenQuanYi Micro Hei", "DejaVu Sans",
+]
 matplotlib.rcParams["axes.unicode_minus"] = False
+
+
+def _ensure_cjk_font() -> None:
+    """Online (marimo WASM) the Pyodide matplotlib ships only DejaVu Sans, which
+    has no Chinese glyphs, so every title renders as tofu boxes. Detect that
+    environment and fetch a CJK font once, registering it with matplotlib.
+
+    Native runs return immediately and keep using the installed system font.
+    Failure is swallowed: worst case we fall back to DejaVu Sans (no crash).
+    """
+    if sys.platform != "emscripten":
+        return
+    from matplotlib import font_manager
+
+    if any(f.name == "WenQuanYi Micro Hei" for f in font_manager.fontManager.ttflist):
+        return
+    url = "https://cdn.jsdelivr.net/gh/anthonyfok/fonts-wqy-microhei/wqy-microhei.ttc"
+    try:
+        # marimo's kernel runs in a web worker, where a *synchronous* XHR may use
+        # responseType="arraybuffer" — the only sync way to pull binary data in.
+        from js import XMLHttpRequest, Uint8Array
+
+        xhr = XMLHttpRequest.new()
+        xhr.open("GET", url, False)
+        xhr.responseType = "arraybuffer"
+        xhr.send()
+        if xhr.status != 200:
+            return
+        path = "/tmp/wqy-microhei.ttc"
+        with open(path, "wb") as fh:
+            fh.write(bytes(Uint8Array.new(xhr.response)))
+        font_manager.fontManager.addfont(path)
+        matplotlib.rcParams["font.sans-serif"] = ["WenQuanYi Micro Hei", "DejaVu Sans"]
+    except Exception:
+        pass
+
+
+_ensure_cjk_font()
 
 # action index -> (dx, dy).  y grows downward (row index), so dy=+1 is "down".
 ACTIONS = [(0, -1), (1, 0), (0, 1), (-1, 0), (0, 0)]
