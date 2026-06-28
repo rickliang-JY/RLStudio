@@ -618,9 +618,13 @@
   function setLang(lang) {
     LANG = lang;
     localStorage.setItem("rlstudio-lang", lang);
+    // 原地重渲染当前视图并保持滚动位置，不跳转
+    const y = window.scrollY;
     applyUI();
     renderHome();
-    route();
+    const m = (location.hash || "#/").match(/^#\/section\/([\w-]+)/);
+    if (m) { const sec = SECTIONS.find(s => s.id === m[1]); if (sec) renderDetail(sec); }
+    window.scrollTo(0, y);
   }
 
   const nbHref = (card, secId) =>
