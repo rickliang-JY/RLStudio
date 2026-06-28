@@ -1,0 +1,115 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>RLStudio · 运行</title>
+<style>
+  :root {
+    --bg:#fbfbfd; --surface:#ffffff; --text:#18181b; --muted:#6b6b72;
+    --border:#ececef; --border-strong:#dcdce1;
+    --accent:#2b6cf0; --accent-deep:#1a4fd0; --accent-soft:#eef3fe;
+    --font:-apple-system,BlinkMacSystemFont,"Segoe UI",system-ui,"PingFang SC",
+           "Microsoft YaHei","Noto Sans CJK SC",sans-serif;
+  }
+  * { box-sizing:border-box; }
+  html,body { margin:0; height:100%; }
+  body { background:var(--bg); color:var(--text); font-family:var(--font);
+    -webkit-font-smoothing:antialiased; display:flex; flex-direction:column; }
+  a { color:inherit; text-decoration:none; }
+
+  .bar {
+    height:56px; flex:none; display:flex; align-items:center; gap:16px; padding:0 20px;
+    background:rgba(251,251,253,.82); backdrop-filter:saturate(180%) blur(16px);
+    -webkit-backdrop-filter:saturate(180%) blur(16px); border-bottom:1px solid var(--border);
+  }
+  .back { font-size:14px; color:var(--muted); transition:color .18s; }
+  .back:hover { color:var(--accent); }
+  .vtitle { font-weight:620; font-size:15px; letter-spacing:-.01em;
+    white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
+  .spacer { flex:1; }
+  .molab {
+    display:inline-flex; align-items:center; gap:8px; flex:none;
+    border:1px solid var(--border-strong); border-radius:999px; padding:8px 15px;
+    font-size:13px; font-weight:560; transition:border-color .18s, background .18s, color .18s;
+  }
+  .molab:hover { border-color:var(--accent); background:var(--accent-soft); color:var(--accent); }
+
+  .frame { flex:1; width:100%; border:0; display:block; }
+
+  .notice { margin:auto; max-width:460px; text-align:center; padding:0 28px; }
+  .notice .ic {
+    width:54px; height:54px; border-radius:14px; background:var(--accent-soft); color:var(--accent);
+    display:inline-flex; align-items:center; justify-content:center; font-size:26px; margin-bottom:20px;
+  }
+  .notice h2 { font-size:21px; font-weight:660; letter-spacing:-.02em; margin:0 0 10px; }
+  .notice p { color:var(--muted); font-size:15px; line-height:1.65; margin:0 0 26px; }
+  .notice .run {
+    display:inline-flex; align-items:center; gap:9px; background:var(--accent); color:#fff;
+    padding:13px 24px; border-radius:999px; font-weight:580; font-size:15px;
+    box-shadow:0 8px 22px rgba(43,108,240,.28); transition:background .18s, transform .16s;
+  }
+  .notice .run:hover { background:var(--accent-deep); transform:translateY(-2px); }
+</style>
+</head>
+<body>
+  <div class="bar">
+    <a class="back" href="index.html">‹ 返回</a>
+    <span class="vtitle" id="vtitle">RLStudio</span>
+    <span class="spacer"></span>
+    <a class="molab" id="molab" target="_blank" rel="noopener" style="display:none">
+      在 molab 运行 / Fork ↗
+    </a>
+  </div>
+  <div id="stage" style="flex:1; display:flex;"></div>
+
+<script>
+  const REPO = "rickliang-JY/RLStudio";
+  const BRANCH = "main";
+  const NB_DIR = "notebooks/foundations";
+  const DEMO_EMBED = "https://marimo.app/github/marimo-team/gallery-examples/blob/main/notebooks/math/cellular-automaton-art.py/wasm?embed=true";
+
+  const embedUrl = f => `https://marimo.app/github/${REPO}/blob/${BRANCH}/${NB_DIR}/${f}/wasm?embed=true&show-code=false`;
+  const molabUrl = f => `https://molab.marimo.io/github/${REPO}/blob/${BRANCH}/${NB_DIR}/${f}`;
+
+  const q = new URLSearchParams(location.search);
+  const stage = document.getElementById("stage");
+  const titleEl = document.getElementById("vtitle");
+  const molabEl = document.getElementById("molab");
+
+  function iframe(src) {
+    stage.innerHTML =
+      `<iframe class="frame" src="${src}"
+         sandbox="allow-scripts allow-same-origin allow-downloads allow-popups allow-forms"
+         allow="microphone" allowfullscreen loading="lazy"></iframe>`;
+  }
+
+  if (q.get("demo")) {
+    titleEl.textContent = "实时嵌入示例 · cellular automaton";
+    iframe(DEMO_EMBED);
+  } else {
+    const file = q.get("file");
+    const title = q.get("title") || file || "RLStudio";
+    titleEl.textContent = title;
+    molabEl.href = molabUrl(file);
+    molabEl.style.display = "inline-flex";
+
+    if (q.get("torch") === "1") {
+      molabEl.style.display = "none";
+      stage.innerHTML = `
+        <div class="notice">
+          <div class="ic">🔥</div>
+          <h2>本章用到 PyTorch</h2>
+          <p>浏览器内嵌（WebAssembly）暂不支持 PyTorch。点下方按钮在 molab 的真实内核里运行——
+             molab 已预装 torch，可直接训练，并能 Fork 修改。</p>
+          <a class="run" href="${molabUrl(file)}" target="_blank" rel="noopener">
+            在 molab 用真实内核运行 ↗
+          </a>
+        </div>`;
+    } else {
+      iframe(embedUrl(file));
+    }
+  }
+</script>
+</body>
+</html>

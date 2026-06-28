@@ -1,0 +1,747 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>RLStudio · 从 0 到强化学习</title>
+<style>
+  /* ============================================================
+     主题变量 —— 想换主题只改这里
+     ============================================================ */
+  :root {
+    --bg:           #fbfbfd;
+    --surface:      #ffffff;
+    --text:         #18181b;
+    --muted:        #6b6b72;
+    --faint:        #9a9aa2;
+    --border:       #ececef;
+    --border-strong:#dcdce1;
+    --thumb-bg:     #f4f4f6;
+    --thumb-fg:     #c0c0c8;
+
+    --accent:       #2b6cf0;
+    --accent-deep:  #1a4fd0;
+    --accent-soft:  #eef3fe;
+
+    --radius-lg: 18px;
+    --radius:    13px;
+    --radius-sm: 9px;
+
+    --maxw: 1080px;
+
+    --shadow-card:  0 1px 2px rgba(20,23,40,.04), 0 10px 30px rgba(20,23,40,.05);
+    --shadow-hover: 0 2px 5px rgba(20,23,40,.05), 0 20px 44px rgba(43,108,240,.13);
+
+    --font: -apple-system, BlinkMacSystemFont, "Segoe UI", system-ui, "PingFang SC",
+            "Microsoft YaHei", "Hiragino Sans GB", "Noto Sans CJK SC", sans-serif;
+    --serif: "Georgia", "Songti SC", "Times New Roman", serif;
+    --mono: ui-monospace, "SF Mono", "JetBrains Mono", Menlo, Consolas, monospace;
+  }
+
+  * { box-sizing: border-box; }
+  html { scroll-behavior: smooth; }
+  body {
+    margin: 0; background: var(--bg); color: var(--text);
+    font-family: var(--font); line-height: 1.55;
+    -webkit-font-smoothing: antialiased; text-rendering: optimizeLegibility;
+  }
+  a { color: inherit; text-decoration: none; }
+  .wrap { max-width: var(--maxw); margin: 0 auto; padding: 0 24px; }
+
+  /* ============================================================ header */
+  header.site {
+    position: sticky; top: 0; z-index: 50;
+    background: rgba(251,251,253,.78);
+    backdrop-filter: saturate(180%) blur(16px);
+    -webkit-backdrop-filter: saturate(180%) blur(16px);
+    border-bottom: 1px solid var(--border);
+  }
+  .site .wrap { height: 60px; display: flex; align-items: center; justify-content: space-between; }
+  .brand { display: flex; align-items: center; gap: 10px; font-weight: 650; letter-spacing: -.01em; }
+  .brand .glyph {
+    width: 26px; height: 26px; border-radius: 7px; background: var(--accent);
+    position: relative; flex: none; box-shadow: inset 0 0 0 1px rgba(255,255,255,.12);
+  }
+  .brand .glyph::before, .brand .glyph::after { content: ""; position: absolute; background: rgba(255,255,255,.85); }
+  .brand .glyph::before { left: 6px; right: 6px; top: 12.5px; height: 1.5px; }
+  .brand .glyph::after  { top: 6px; bottom: 6px; left: 12.5px; width: 1.5px; }
+  .nav-links { display: flex; align-items: center; gap: 22px; font-size: 14px; color: var(--muted); }
+  .nav-links a:hover { color: var(--text); }
+  .nav-links .ghbtn {
+    display: inline-flex; align-items: center; gap: 7px; padding: 6px 13px;
+    border: 1px solid var(--border-strong); border-radius: 999px; color: var(--text);
+    font-weight: 550; transition: border-color .18s, background .18s;
+  }
+  .nav-links .ghbtn:hover { border-color: var(--accent); background: var(--accent-soft); }
+  @media (max-width: 640px) { .nav-links .hide-sm { display: none; } }
+
+  /* ============================================================ buttons */
+  .btn {
+    display: inline-flex; align-items: center; gap: 9px; font-size: 15.5px; font-weight: 580;
+    cursor: pointer; padding: 13px 22px; border-radius: 999px; border: 1px solid transparent;
+    transition: transform .16s ease, box-shadow .2s, background .18s, border-color .18s, color .18s;
+  }
+  .btn-primary { background: var(--accent); color: #fff; box-shadow: 0 8px 22px rgba(43,108,240,.28); }
+  .btn-primary:hover { background: var(--accent-deep); transform: translateY(-2px); box-shadow: 0 12px 28px rgba(43,108,240,.34); }
+  .btn-primary .play {
+    width: 20px; height: 20px; border-radius: 50%; background: rgba(255,255,255,.22);
+    display: inline-flex; align-items: center; justify-content: center; font-size: 9px;
+  }
+  .btn-ghost { color: var(--text); border-color: var(--border-strong); background: var(--surface); }
+  .btn-ghost:hover { border-color: var(--accent); color: var(--accent); transform: translateY(-2px); }
+
+  /* ============================================================ hero */
+  .hero .wrap {
+    display: grid; grid-template-columns: 1.05fr 1fr; gap: 54px; align-items: center;
+    padding-top: 76px; padding-bottom: 60px;
+  }
+  .hero .eyebrow {
+    display: inline-flex; align-items: center; gap: 8px; font-size: 13px; font-weight: 560;
+    color: var(--accent); background: var(--accent-soft); padding: 5px 13px; border-radius: 999px;
+    margin-bottom: 22px;
+  }
+  .hero .eyebrow .dot { width: 6px; height: 6px; border-radius: 50%; background: var(--accent); }
+  .hero h1 {
+    font-size: clamp(38px, 5.4vw, 60px); line-height: 1.05; letter-spacing: -.035em;
+    margin: 0 0 18px; font-weight: 700;
+  }
+  .hero h1 .accent { color: var(--accent); }
+  .hero .lede { font-size: clamp(16px, 2vw, 19px); color: var(--muted); margin: 0 0 32px; max-width: 46ch; }
+  .cta-row { display: flex; flex-wrap: wrap; gap: 14px; align-items: center; }
+
+  /* 动画面板 */
+  .sim-panel {
+    background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius-lg);
+    box-shadow: var(--shadow-card); padding: 16px; overflow: hidden;
+  }
+  .sim-panel .sim-head {
+    display: flex; align-items: center; justify-content: space-between;
+    font-size: 12px; color: var(--faint); margin-bottom: 12px; padding: 2px 4px;
+    font-family: var(--mono); letter-spacing: .04em;
+  }
+  .sim-panel .sim-head .live { display: inline-flex; align-items: center; gap: 6px; color: var(--accent); }
+  .sim-panel .sim-head .live i {
+    width: 7px; height: 7px; border-radius: 50%; background: var(--accent);
+    animation: pulse 1.6s ease-in-out infinite;
+  }
+  @keyframes pulse { 0%,100% { opacity: 1; transform: scale(1); } 50% { opacity: .35; transform: scale(.7); } }
+  #sim { display: block; width: 100%; height: auto; border-radius: 10px; }
+
+  @media (max-width: 860px) {
+    .hero .wrap { grid-template-columns: 1fr; gap: 36px; padding-top: 56px; }
+    .hero .sim-panel { order: -1; }
+  }
+
+  /* ============================================================ intro */
+  .intro { border-top: 1px solid var(--border); background: var(--surface); }
+  .intro .wrap { padding: 70px 24px; }
+  .section-kicker {
+    font-family: var(--mono); font-size: 12.5px; letter-spacing: .14em; color: var(--accent);
+    font-weight: 600; text-transform: uppercase;
+  }
+  .intro h2 { font-size: clamp(26px, 3.2vw, 34px); letter-spacing: -.025em; font-weight: 680; margin: 10px 0 14px; max-width: 18ch; }
+  .intro .intro-lede { color: var(--muted); font-size: 17px; max-width: 60ch; margin: 0 0 40px; }
+  .feat-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 20px; }
+  @media (max-width: 760px) { .feat-grid { grid-template-columns: 1fr; } }
+  .feat { padding: 22px 22px 24px; border: 1px solid var(--border); border-radius: var(--radius); background: var(--bg); }
+  .feat .ic {
+    width: 38px; height: 38px; border-radius: 10px; background: var(--accent-soft); color: var(--accent);
+    display: inline-flex; align-items: center; justify-content: center; font-size: 19px; margin-bottom: 14px;
+  }
+  .feat h4 { margin: 0 0 6px; font-size: 16.5px; font-weight: 640; }
+  .feat p { margin: 0; color: var(--muted); font-size: 14.5px; line-height: 1.6; }
+
+  /* ============================================================ chapter picker (home) */
+  .chapters { padding: 74px 0 96px; }
+  .chapters .head { margin-bottom: 30px; }
+  .chapters h2 { font-size: clamp(26px, 3.2vw, 34px); letter-spacing: -.025em; font-weight: 680; margin: 10px 0 0; }
+  .ch-grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 18px; }
+  @media (max-width: 720px) { .ch-grid { grid-template-columns: 1fr; } }
+  .ch-card {
+    display: flex; flex-direction: column; padding: 26px 26px 24px; background: var(--surface);
+    border: 1px solid var(--border); border-radius: var(--radius); cursor: pointer; position: relative;
+    box-shadow: var(--shadow-card);
+    transition: transform .2s cubic-bezier(.2,.7,.3,1), box-shadow .25s, border-color .2s;
+  }
+  .ch-card:hover { transform: translateY(-5px); border-color: color-mix(in srgb, var(--accent) 55%, var(--border)); box-shadow: var(--shadow-hover); }
+  .ch-card .ch-top { display: flex; align-items: baseline; gap: 12px; margin-bottom: 14px; }
+  .ch-card .ch-no { font-family: var(--mono); font-size: 13px; color: var(--accent); font-weight: 600; letter-spacing: .06em; }
+  .ch-card .ch-count { margin-left: auto; font-size: 13px; color: var(--faint); }
+  .ch-card h3 { margin: 0 0 6px; font-size: 21px; font-weight: 660; letter-spacing: -.02em; }
+  .ch-card p { margin: 0; color: var(--muted); font-size: 14.5px; line-height: 1.55; }
+  .ch-card .go { margin-top: 18px; font-size: 14px; font-weight: 560; color: var(--accent); display: inline-flex; align-items: center; gap: 6px; }
+  .ch-card.is-soon { opacity: .8; }
+  .ch-card .pill { margin-left: auto; font-size: 11px; font-weight: 600; padding: 3px 10px; border-radius: 999px; background: #f1f1f4; color: var(--faint); }
+
+  /* ============================================================ section detail */
+  .detail { padding: 40px 0 96px; }
+  .back {
+    display: inline-flex; align-items: center; gap: 7px; font-size: 14px; color: var(--muted);
+    margin-bottom: 30px; transition: color .18s;
+  }
+  .back:hover { color: var(--accent); }
+  .detail-head { border-bottom: 1px solid var(--border); padding-bottom: 28px; margin-bottom: 8px; max-width: 760px; }
+  .detail-head h1 { font-size: clamp(30px, 4vw, 42px); letter-spacing: -.03em; font-weight: 700; margin: 12px 0 10px; }
+  .detail-head p { color: var(--muted); font-size: 16.5px; margin: 0; }
+
+  .rows { display: flex; flex-direction: column; }
+  .row {
+    display: grid; grid-template-columns: 208px 1fr; gap: 30px; align-items: center;
+    padding: 30px 0; border-bottom: 1px solid var(--border); cursor: pointer;
+  }
+  .row:last-child { border-bottom: none; }
+  .row .thumb {
+    width: 208px; height: 156px; border-radius: var(--radius); background: var(--thumb-bg);
+    display: flex; align-items: center; justify-content: center; overflow: hidden; flex: none;
+    transition: transform .25s ease, box-shadow .25s;
+  }
+  .row .thumb span { font-family: var(--serif); font-size: 40px; color: var(--thumb-fg); letter-spacing: .02em; line-height: 1; }
+  .row .body { min-width: 0; }
+  .row .meta {
+    font-size: 12px; letter-spacing: .1em; text-transform: uppercase; color: var(--faint);
+    font-weight: 600; margin-bottom: 11px; display: flex; align-items: center; gap: 10px; flex-wrap: wrap;
+  }
+  .row .meta .tag {
+    text-transform: none; letter-spacing: 0; font-size: 11px; font-weight: 600; padding: 2px 9px;
+    border-radius: 999px; background: #fff3e6; color: #c2660a; border: 1px solid #f6dcbb;
+  }
+  .row h3 { font-size: 22px; font-weight: 660; letter-spacing: -.02em; margin: 0 0 9px; transition: color .18s; }
+  .row .desc { color: var(--muted); font-size: 15.5px; line-height: 1.62; margin: 0 0 16px; max-width: 60ch; }
+  .row .read { font-size: 14px; font-weight: 560; color: var(--text); display: inline-flex; align-items: center; gap: 6px; transition: color .18s, gap .18s; }
+  .row .read .ar { transition: transform .2s; }
+
+  .row:hover .thumb { transform: translateY(-3px); box-shadow: var(--shadow-hover); }
+  .row:hover h3 { color: var(--accent); }
+  .row:hover .read { color: var(--accent); gap: 9px; }
+  .row:hover .read .ar { transform: translate(2px, -2px); }
+
+  .row.is-soon { cursor: not-allowed; }
+  .row.is-soon .thumb { background: repeating-linear-gradient(135deg, #f6f6f8 0 10px, #f1f1f4 10px 20px); }
+  .row.is-soon:hover .thumb { transform: none; box-shadow: none; }
+  .row.is-soon h3 { color: var(--muted); }
+  .row.is-soon:hover h3 { color: var(--muted); }
+  .row.is-soon .read { color: var(--faint); }
+
+  @media (max-width: 680px) {
+    .row { grid-template-columns: 1fr; gap: 16px; }
+    .row .thumb { width: 100%; height: 150px; }
+  }
+
+  /* ============================================================ footer */
+  footer { border-top: 1px solid var(--border); padding: 34px 0 48px; color: var(--faint); font-size: 13.5px; }
+  footer .wrap { display: flex; flex-wrap: wrap; gap: 8px 18px; justify-content: space-between; align-items: center; }
+  footer a:hover { color: var(--accent); }
+
+  .view { animation: fade .4s ease both; }
+  @keyframes fade { from { transform: translateY(8px); } to { transform: none; } }
+</style>
+</head>
+<body>
+
+<!-- ============================================================
+     单一数据源：以后加章节只改这个数组
+     status: "open" | "soon" | "pdf"
+     ============================================================ -->
+<script>
+  const TOPICS = [
+    "基本概念", "贝尔曼方程", "贝尔曼最优方程", "值-策略迭代", "蒙特卡洛",
+    "随机近似", "时序差分", "值函数近似 · DQN", "策略梯度", "Actor-Critic"
+  ];
+  const BASIC_DESC = [
+    "建立 state / action / reward / policy / return 的语言，在网格世界里写下第一个 MDP。",
+    "用贝尔曼方程描述给定策略下的状态价值，并迭代求解它的收敛值。",
+    "最优价值与最优策略：压缩映射、不动点，以及贝尔曼最优方程的含义。",
+    "动态规划的两条路：值迭代与策略迭代，对比它们的收敛行为与代价。",
+    "无模型方法登场：用采样回报估计价值，MC exploring starts 与 ε-greedy。",
+    "Robbins-Monro 随机近似——从均值估计到随机梯度下降的桥梁。",
+    "TD(0)、Sarsa、Q-learning：在线、自举式地边走边学。",
+    "用神经网络逼近 Q 值：经验回放与目标网络让训练稳定下来（PyTorch 实现）。",
+    "绕过价值、直接对策略参数求梯度：REINFORCE 与基线的引入。",
+    "价值与策略协同：Actor-Critic 与优势函数的结构。"
+  ];
+  const EX_DESC = [
+    "可视化状态、动作、奖励在网格世界中的基本流转。",
+    "逐格显示给定策略下贝尔曼方程的迭代收敛过程。",
+    "用箭头图呈现最优策略，观察最优价值如何形成。",
+    "并排对比值迭代与策略迭代的收敛轮数。",
+    "蒙特卡洛采样轨迹与价值估计随样本增多的变化。",
+    "用随机近似演示均值如何在噪声中逐步逼近真值。",
+    "Sarsa 与 Q-learning 在同一网格上的学习曲线对比。",
+    "DQN 在网格世界上的训练：经验回放与目标网络的作用。",
+    "REINFORCE 的策略分布如何随梯度更新而集中。",
+    "Actor-Critic 中价值网络与策略网络的协同更新。"
+  ];
+  const pad = n => String(n).padStart(2, "0");
+
+  // ===== 配置：仓库与目录（以后改这里即可） =====
+  const REPO   = "rickliang-JY/RLStudio";
+  const BRANCH = "main";
+  const NB_DIR = "notebooks/foundations";
+  // 一个立即可跑的官方示例，用于首页"实时嵌入示例"按钮。
+  const DEMO_EMBED = "https://marimo.app/github/marimo-team/gallery-examples/blob/main/notebooks/math/cellular-automaton-art.py/wasm?embed=true";
+
+  // 基础章节对应的真实 marimo 文件名。
+  const FOUND_FILES = [
+    "ch01_basic_concepts.py", "ch02_bellman_equation.py", "ch03_bellman_optimality.py",
+    "ch04_value_policy_iteration.py", "ch05_monte_carlo.py", "ch06_stochastic_approximation.py",
+    "ch07_temporal_difference.py", "ch08_value_function_approximation.py",
+    "ch09_policy_gradient.py", "ch10_actor_critic.py"
+  ];
+
+  const SECTIONS = [
+    {
+      id: "basics",
+      no: "01",
+      kind: "ALGORITHM",
+      title: "强化学习的数学原理",
+      subtitle: "赵世钰《Mathematical Foundation of Reinforcement Learning》逐章算法实现。",
+      cards: TOPICS.map((t, i) => ({
+        thumb: pad(i + 1),
+        title: t,
+        kind: "ALGORITHM",
+        desc: BASIC_DESC[i],
+        nb: FOUND_FILES[i],
+        tags: i === 7 ? ["PyTorch"] : [],
+        torch: i === 7,
+        status: "open"
+      }))
+    },
+    {
+      id: "examples",
+      no: "02",
+      kind: "EXAMPLE",
+      title: "书中例子复现",
+      subtitle: "把书里的经典插图例子做成可在浏览器里调的交互版本。",
+      cards: TOPICS.map((t, i) => ({
+        thumb: "Ex " + (i + 1),
+        title: `第 ${i + 1} 章例子 · ${t}`,
+        kind: "EXAMPLE",
+        desc: EX_DESC[i],
+        nb: `ch${pad(i + 1)}_examples.py`,
+        status: "open"
+      }))
+    },
+    {
+      id: "lab",
+      no: "03",
+      kind: "PLAYGROUND",
+      title: "实验场",
+      subtitle: "自定义 grid world，随手改地图和参数。",
+      cards: [
+        {
+          thumb: "▦",
+          title: "Custom Grid World Lab",
+          kind: "PLAYGROUND",
+          desc: "自己画地图、设奖励、调折扣因子和探索率，实时看价值场与最优策略如何随之变化。",
+          nb: "custom_gridworld_lab.py",
+          status: "open"
+        }
+      ]
+    },
+    {
+      id: "advanced",
+      no: "04",
+      kind: "RESEARCH",
+      title: "现代策略优化",
+      subtitle: "敬请期待。",
+      cards: [
+        { thumb: "PPO",  title: "PPO · 近端策略优化",   kind: "RESEARCH", desc: "用裁剪过的目标函数稳定策略更新——现代 RL 最常用的基线方法之一。", status: "soon" },
+        { thumb: "GRPO", title: "GRPO · 组相对策略优化", kind: "RESEARCH", desc: "以组内相对优势替代价值网络，近来在大模型对齐中被广泛使用。", status: "soon" },
+        { thumb: "DPO",  title: "DPO · 直接偏好优化",   kind: "RESEARCH", desc: "跳过显式奖励模型，直接从偏好数据优化策略。", status: "soon" }
+      ]
+    },
+    {
+      id: "notes",
+      no: "05",
+      kind: "NOTES",
+      title: "笔记 · PDF 讲解",
+      subtitle: "整体设计与原理的文字讲解。",
+      cards: [
+        {
+          thumb: "PDF",
+          title: "RLStudio 设计与原理讲解",
+          kind: "NOTES",
+          desc: "整体架构、可视化思路与各章算法笔记，配图与推导——把项目背后的设计想法讲清楚。",
+          pdf: "notes/RLStudio-notes.pdf",
+          status: "pdf"
+        }
+      ]
+    }
+  ];
+</script>
+
+<header class="site">
+  <div class="wrap">
+    <a class="brand" href="#/"><span class="glyph"></span><b>RLStudio</b></a>
+    <nav class="nav-links">
+      <a href="#/" class="hide-sm">首页</a>
+      <a href="#about" class="hide-sm">关于</a>
+      <a href="#pick" class="hide-sm">章节</a>
+      <a class="ghbtn" href="https://github.com/rickliang-JY/RLStudio" target="_blank" rel="noopener">
+        <svg width="15" height="15" viewBox="0 0 16 16" fill="currentColor" aria-hidden="true"><path d="M8 0C3.58 0 0 3.58 0 8c0 3.54 2.29 6.53 5.47 7.59.4.07.55-.17.55-.38 0-.19-.01-.82-.01-1.49-2.01.37-2.53-.49-2.69-.94-.09-.23-.48-.94-.82-1.13-.28-.15-.68-.52-.01-.53.63-.01 1.08.58 1.23.82.72 1.21 1.87.87 2.33.66.07-.52.28-.87.51-1.07-1.78-.2-3.64-.89-3.64-3.95 0-.87.31-1.59.82-2.15-.08-.2-.36-1.02.08-2.12 0 0 .67-.21 2.2.82.64-.18 1.32-.27 2-.27.68 0 1.36.09 2 .27 1.53-1.04 2.2-.82 2.2-.82.44 1.1.16 1.92.08 2.12.51.56.82 1.27.82 2.15 0 3.07-1.87 3.75-3.65 3.95.29.25.54.73.54 1.48 0 1.07-.01 1.93-.01 2.2 0 .21.15.46.55.38A8.01 8.01 0 0016 8c0-4.42-3.58-8-8-8z"/></svg>
+        GitHub
+      </a>
+    </nav>
+  </div>
+</header>
+
+<div id="app"></div>
+
+<footer>
+  <div class="wrap">
+    <span>RLStudio · 从 0 到强化学习 · 开源学习项目</span>
+    <span>基于赵世钰《Mathematical Foundation of Reinforcement Learning》</span>
+  </div>
+</footer>
+
+<script>
+  const enc = encodeURIComponent;
+  const esc = s => String(s).replace(/[&<>"]/g, c => ({ "&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;" }[c]));
+  const nbHref = c => `notebook.html?file=${enc(c.nb)}&title=${enc(c.title)}${c.torch ? "&torch=1" : ""}`;
+  const app = document.getElementById("app");
+
+  /* ---------------- 首页 ---------------- */
+  function homeHTML() {
+    const chCards = SECTIONS.map(s => {
+      const soon = s.id === "advanced";
+      const count = s.cards.length;
+      const inner = `
+        <div class="ch-top">
+          <span class="ch-no">${s.no}</span>
+          ${soon ? `<span class="pill">即将推出</span>` : `<span class="ch-count">${count} 个内容</span>`}
+        </div>
+        <h3>${esc(s.title)}</h3>
+        <p>${esc(s.subtitle)}</p>
+        <span class="go">进入章节 →</span>`;
+      return `<a class="ch-card${soon ? " is-soon" : ""}" href="#/s/${s.id}">${inner}</a>`;
+    }).join("");
+
+    return `
+    <div class="view">
+      <section class="hero">
+        <div class="wrap">
+          <div>
+            <span class="eyebrow"><span class="dot"></span>开源 · 交互式学习材料</span>
+            <h1>从 0 到<br><span class="accent">强化学习</span></h1>
+            <p class="lede">每个 RL 算法都配同一个网格世界例子并做了可视化。在浏览器里直接运行 notebook、拖滑块看效果——把课本里的公式，变成你能上手调的东西。</p>
+            <div class="cta-row">
+              <a class="btn btn-primary" href="notebook.html?demo=1"><span class="play">▶</span>看一个实时嵌入示例</a>
+              <a class="btn btn-ghost" href="#pick">选择章节</a>
+            </div>
+          </div>
+          <div class="sim-panel">
+            <div class="sim-head">
+              <span>GRID WORLD · 价值迭代</span>
+              <span class="live"><i></i>LIVE</span>
+            </div>
+            <canvas id="sim" width="520" height="380"></canvas>
+          </div>
+        </div>
+      </section>
+
+      <section class="intro" id="about">
+        <div class="wrap">
+          <div class="section-kicker">关于项目</div>
+          <h2>一套能跑、能调、能看见的强化学习教材</h2>
+          <p class="intro-lede">RLStudio 把强化学习从黑板搬进浏览器。所有算法共用同一个网格世界，因此你能横向比较它们的行为；每一章都是一个可运行的 notebook，公式旁边就是能拖动的滑块和实时刷新的可视化。</p>
+          <div class="feat-grid">
+            <div class="feat">
+              <div class="ic">▦</div>
+              <h4>统一的网格世界</h4>
+              <p>从动态规划到 Actor-Critic，所有算法在同一张地图上对照，差异一目了然。</p>
+            </div>
+            <div class="feat">
+              <div class="ic">▶</div>
+              <h4>浏览器里直接跑</h4>
+              <p>无需本地环境，点开即用。拖滑块改参数，价值场与策略实时重算。</p>
+            </div>
+            <div class="feat">
+              <div class="ic">∑</div>
+              <h4>对照课本逐章实现</h4>
+              <p>紧扣赵世钰的数学教材，每个公式都能找到对应的、可读的代码实现。</p>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <section class="chapters" id="pick">
+        <div class="wrap">
+          <div class="head">
+            <div class="section-kicker">选择章节</div>
+            <h2>从哪里开始？</h2>
+          </div>
+          <div class="ch-grid">${chCards}</div>
+        </div>
+      </section>
+    </div>`;
+  }
+
+  /* ---------------- 章节子页 ---------------- */
+  function rowHTML(c) {
+    const soon = c.status === "soon";
+    const pdf  = c.status === "pdf";
+    const href = soon ? null : (pdf ? c.pdf : nbHref(c));
+    const tag  = c.tags && c.tags.length ? c.tags.map(t => `<span class="tag">${esc(t)}</span>`).join("") : "";
+    const readTxt = soon ? "即将推出" : (pdf ? "下载 PDF" : "阅读");
+    const inner = `
+      <div class="thumb"><span>${esc(c.thumb)}</span></div>
+      <div class="body">
+        <div class="meta"><span>${esc(c.kind)}</span>${tag}</div>
+        <h3>${esc(c.title)}</h3>
+        <p class="desc">${esc(c.desc)}</p>
+        <span class="read">${readTxt} <span class="ar">↗</span></span>
+      </div>`;
+    if (soon) return `<div class="row is-soon">${inner}</div>`;
+    const extra = pdf ? ` target="_blank" rel="noopener"` : "";
+    return `<a class="row" href="${href}"${extra}>${inner}</a>`;
+  }
+
+  function sectionHTML(s) {
+    return `
+    <div class="view detail">
+      <div class="wrap">
+        <a class="back" href="#/">← 返回 RLStudio</a>
+        <div class="detail-head">
+          <div class="section-kicker">${s.no} · ${esc(s.kind)}</div>
+          <h1>${esc(s.title)}</h1>
+          <p>${esc(s.subtitle)}</p>
+        </div>
+        <div class="rows">${s.cards.map(rowHTML).join("")}</div>
+      </div>
+    </div>`;
+  }
+
+  /* ---------------- 路由 ---------------- */
+  let rafId = null;
+  function stopSim() { if (rafId) { cancelAnimationFrame(rafId); rafId = null; } }
+
+  function render() {
+    stopSim();
+    const hash = location.hash || "#/";
+    const m = hash.match(/^#\/s\/(.+)$/);
+    if (m) {
+      const sec = SECTIONS.find(s => s.id === m[1]);
+      if (sec) { app.innerHTML = sectionHTML(sec); window.scrollTo(0, 0); return; }
+    }
+    app.innerHTML = homeHTML();
+    initSim(document.getElementById("sim"));
+    // 支持从 header 锚点进入子区块
+    if (hash === "#about" || hash === "#pick") {
+      const t = document.querySelector(hash);
+      if (t) t.scrollIntoView ? requestAnimationFrame(() => window.scrollTo(0, t.offsetTop - 70)) : null;
+    } else {
+      window.scrollTo(0, 0);
+    }
+  }
+  window.addEventListener("hashchange", render);
+
+  /* ============================================================
+     网格世界价值迭代动画
+     ============================================================ */
+  function initSim(canvas) {
+    if (!canvas) return;
+    const reduce = window.matchMedia && window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+    const COLS = 7, ROWS = 5;
+    const GOAL = { c: COLS - 1, r: 0 };
+    const WALLS = new Set(["2,1","2,2","2,3","4,2","4,3","5,3"]);
+    const GAMMA = 0.9;
+    const key = (c, r) => c + "," + r;
+    const inb = (c, r) => c >= 0 && c < COLS && r >= 0 && r < ROWS;
+    const isWall = (c, r) => WALLS.has(key(c, r));
+
+    // BFS 距离 -> 价值
+    const dist = {}; const q = [GOAL]; dist[key(GOAL.c, GOAL.r)] = 0;
+    const dirs = [[1,0],[-1,0],[0,1],[0,-1]];
+    while (q.length) {
+      const cur = q.shift();
+      for (const [dc, dr] of dirs) {
+        const nc = cur.c + dc, nr = cur.r + dr;
+        if (!inb(nc, nr) || isWall(nc, nr)) continue;
+        const k = key(nc, nr);
+        if (dist[k] === undefined) { dist[k] = dist[key(cur.c, cur.r)] + 1; q.push({ c: nc, r: nr }); }
+      }
+    }
+    const value = (c, r) => { const d = dist[key(c, r)]; return d === undefined ? 0 : Math.pow(GAMMA, d); };
+    const policy = (c, r) => {
+      let best = null, bd = Infinity;
+      for (const [dc, dr] of dirs) {
+        const nc = c + dc, nr = r + dr; const k = key(nc, nr);
+        if (!inb(nc, nr) || isWall(nc, nr) || dist[k] === undefined) continue;
+        if (dist[k] < bd) { bd = dist[k]; best = { c: nc, r: nr }; }
+      }
+      return best;
+    };
+    const starts = [];
+    for (let c = 0; c < COLS; c++) for (let r = 0; r < ROWS; r++)
+      if (!isWall(c, r) && dist[key(c, r)] !== undefined && dist[key(c, r)] >= 4) starts.push({ c, r });
+
+    const ctx = canvas.getContext("2d");
+    const cssVar = n => getComputedStyle(document.documentElement).getPropertyValue(n).trim();
+    const ACC = cssVar("--accent") || "#2b6cf0";
+    const ACCD = cssVar("--accent-deep") || "#1a4fd0";
+
+    let W, H, cell, padX, padY, dpr;
+    function resize() {
+      const rect = canvas.getBoundingClientRect();
+      const wCss = rect.width || 520;
+      const hCss = wCss * (ROWS / COLS) * 0.86 + 0;
+      dpr = Math.min(window.devicePixelRatio || 1, 2);
+      canvas.width = Math.round(wCss * dpr);
+      canvas.height = Math.round(hCss * dpr);
+      canvas.style.height = hCss + "px";
+      W = wCss; H = hCss;
+      const gap = 6;
+      cell = Math.min((W - gap) / COLS, (H - gap) / ROWS);
+      padX = (W - cell * COLS) / 2;
+      padY = (H - cell * ROWS) / 2;
+      ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+    }
+    resize();
+    const ro = new ResizeObserver(resize); ro.observe(canvas);
+
+    function lerp(a, b, t) { return a + (b - a) * t; }
+    function ease(t) { return t < .5 ? 2*t*t : 1 - Math.pow(-2*t+2, 2)/2; }
+    function cellXY(c, r) { return { x: padX + c * cell, y: padY + r * cell }; }
+
+    // 状态机
+    let agent = starts.length ? { ...starts[(Math.random()*starts.length)|0] } : { c: 0, r: ROWS-1 };
+    let target = policy(agent.c, agent.r) || agent;
+    let trail = [];
+    const STEP_MS = 520;
+    let t0 = performance.now();
+
+    function newRun() {
+      agent = starts.length ? { ...starts[(Math.random()*starts.length)|0] } : { c: 0, r: ROWS-1 };
+      target = policy(agent.c, agent.r) || agent;
+      trail = [];
+    }
+
+    function rr(x, y, w, h, rad) {
+      ctx.beginPath();
+      ctx.moveTo(x+rad, y); ctx.arcTo(x+w, y, x+w, y+h, rad);
+      ctx.arcTo(x+w, y+h, x, y+h, rad); ctx.arcTo(x, y+h, x, y, rad);
+      ctx.arcTo(x, y, x+w, y, rad); ctx.closePath();
+    }
+
+    function drawGrid(now) {
+      ctx.clearRect(0, 0, W, H);
+      const m = 3, rad = Math.max(4, cell * 0.14);
+      for (let c = 0; c < COLS; c++) for (let r = 0; r < ROWS; r++) {
+        const { x, y } = cellXY(c, r);
+        const w = cell - m, h = cell - m;
+        if (isWall(c, r)) {
+          ctx.fillStyle = "#e7e7ec";
+          rr(x + m/2, y + m/2, w, h, rad); ctx.fill();
+          continue;
+        }
+        const v = value(c, r);
+        // 价值热力：白 -> 强调色
+        ctx.fillStyle = "#f7f8fb";
+        rr(x + m/2, y + m/2, w, h, rad); ctx.fill();
+        if (v > 0.001) {
+          ctx.globalAlpha = 0.10 + v * 0.62;
+          ctx.fillStyle = ACC;
+          rr(x + m/2, y + m/2, w, h, rad); ctx.fill();
+          ctx.globalAlpha = 1;
+        }
+        // 策略箭头
+        const p = policy(c, r);
+        if (p && !(c === GOAL.c && r === GOAL.r)) {
+          const cx = x + cell/2, cy = y + cell/2;
+          const dx = (p.c - c), dy = (p.r - r);
+          const len = cell * 0.20;
+          ctx.strokeStyle = v > 0.35 ? "rgba(255,255,255,.85)" : "rgba(43,108,240,.45)";
+          ctx.lineWidth = 1.6; ctx.lineCap = "round";
+          ctx.beginPath();
+          ctx.moveTo(cx - dx*len, cy - dy*len);
+          ctx.lineTo(cx + dx*len, cy + dy*len);
+          ctx.stroke();
+          // 箭头头
+          const hx = cx + dx*len, hy = cy + dy*len, a = cell*0.09;
+          ctx.beginPath();
+          ctx.moveTo(hx, hy);
+          ctx.lineTo(hx - dx*a - dy*a*0.7, hy - dy*a + dx*a*0.7);
+          ctx.moveTo(hx, hy);
+          ctx.lineTo(hx - dx*a + dy*a*0.7, hy - dy*a - dx*a*0.7);
+          ctx.stroke();
+        }
+      }
+      // 目标
+      const g = cellXY(GOAL.c, GOAL.r);
+      const pulse = 0.5 + 0.5 * Math.sin(now / 480);
+      ctx.fillStyle = ACCD;
+      rr(g.x + m/2, g.y + m/2, cell - m, cell - m, rad); ctx.fill();
+      ctx.fillStyle = "rgba(255,255,255,.92)";
+      ctx.font = `${cell*0.34}px var(--font), sans-serif`;
+      ctx.textAlign = "center"; ctx.textBaseline = "middle";
+      ctx.fillText("★", g.x + cell/2, g.y + cell/2 + cell*0.02);
+      ctx.globalAlpha = 0.22 + pulse * 0.18;
+      ctx.strokeStyle = ACCD; ctx.lineWidth = 2;
+      rr(g.x + m/2 - 2, g.y + m/2 - 2, cell - m + 4, cell - m + 4, rad + 2); ctx.stroke();
+      ctx.globalAlpha = 1;
+    }
+
+    function drawAgent(ix, iy) {
+      // 轨迹
+      for (let i = 0; i < trail.length; i++) {
+        const tp = trail[i];
+        const { x, y } = cellXY(tp.c, tp.r);
+        ctx.globalAlpha = 0.07 + (i / trail.length) * 0.16;
+        ctx.fillStyle = ACC;
+        const s = cell * 0.30;
+        rr(x + cell/2 - s/2, y + cell/2 - s/2, s, s, s*0.3); ctx.fill();
+      }
+      ctx.globalAlpha = 1;
+      const s = cell * 0.46;
+      ctx.save();
+      ctx.shadowColor = "rgba(26,79,208,.4)"; ctx.shadowBlur = 12; ctx.shadowOffsetY = 3;
+      ctx.fillStyle = ACCD;
+      rr(ix + cell/2 - s/2, iy + cell/2 - s/2, s, s, s*0.28); ctx.fill();
+      ctx.restore();
+      ctx.fillStyle = "rgba(255,255,255,.92)";
+      const e = s * 0.16;
+      ctx.beginPath(); ctx.arc(ix + cell/2 - s*0.16, iy + cell/2 - s*0.04, e, 0, 7); ctx.fill();
+      ctx.beginPath(); ctx.arc(ix + cell/2 + s*0.16, iy + cell/2 - s*0.04, e, 0, 7); ctx.fill();
+    }
+
+    function frame(now) {
+      let t = (now - t0) / STEP_MS;
+      if (t >= 1) {
+        // 落子到 target
+        trail.push({ c: agent.c, r: agent.r });
+        if (trail.length > 6) trail.shift();
+        agent = { ...target };
+        if (agent.c === GOAL.c && agent.r === GOAL.r) {
+          drawGrid(now);
+          const a = cellXY(agent.c, agent.r); drawAgent(a.x, a.y);
+          // 停一下再重开
+          t0 = now + 500;
+          setTimeout(() => { if (rafId !== null) { newRun(); t0 = performance.now(); } }, 520);
+          rafId = requestAnimationFrame(frame);
+          return;
+        }
+        target = policy(agent.c, agent.r) || agent;
+        t0 = now; t = 0;
+      }
+      const te = ease(Math.max(0, t));
+      const a = cellXY(agent.c, agent.r), b = cellXY(target.c, target.r);
+      const ix = lerp(a.x, b.x, te), iy = lerp(a.y, b.y, te);
+      drawGrid(now);
+      drawAgent(ix, iy);
+      rafId = requestAnimationFrame(frame);
+    }
+
+    if (reduce) {
+      const a = cellXY(agent.c, agent.r);
+      drawGrid(performance.now()); drawAgent(a.x, a.y);
+    } else {
+      t0 = performance.now();
+      rafId = requestAnimationFrame(frame);
+    }
+  }
+
+  render();
+</script>
+
+</body>
+</html>

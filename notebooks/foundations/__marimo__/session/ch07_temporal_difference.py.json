@@ -1,0 +1,159 @@
+{
+  "version": "1",
+  "metadata": {
+    "marimo_version": "0.23.10",
+    "script_metadata_hash": null
+  },
+  "cells": [
+    {
+      "id": "Hbol",
+      "code_hash": "5be0bdd247ed71077bd682cac46b5e32",
+      "outputs": [
+        {
+          "type": "data",
+          "data": {
+            "text/markdown": "<span class=\"markdown prose dark:prose-invert contents\"><h1 id=\"7-temporal-difference\">\u7b2c 7 \u7ae0 \u00b7 \u65f6\u5e8f\u5dee\u5206\u65b9\u6cd5 (Temporal-Difference)</h1>\n<span class=\"paragraph\">TD = <strong>\u8499\u7279\u5361\u6d1b\u7684\u5728\u7ebf\u7248</strong> + <strong>\u968f\u673a\u8fd1\u4f3c\u7684\u5e94\u7528</strong>\uff1a\u4e0d\u5fc5\u7b49 episode \u7ed3\u675f\uff0c\n\u6bcf\u8d70\u4e00\u6b65\u5c31\u7528<strong>\u81ea\u4e3e (bootstrapping)</strong> \u66f4\u65b0\u2014\u2014\u7528\"\u4e0b\u4e00\u6b65\u7684\u4f30\u8ba1\"\u6539\u8fdb\"\u5f53\u524d\u4f30\u8ba1\"\u3002</span>\n<span class=\"paragraph\">\u7edf\u4e00\u5f62\u5f0f\uff1a\u65b0\u4f30\u8ba1 \u2190 \u65e7\u4f30\u8ba1 + \u03b1\u00b7[ TD target \u2212 \u65e7\u4f30\u8ba1 ]</span>\n<table>\n<thead>\n<tr>\n<th>\u7b97\u6cd5</th>\n<th>\u5b66\u4ec0\u4e48</th>\n<th>TD target</th>\n<th>\u7528\u9014</th>\n</tr>\n</thead>\n<tbody>\n<tr>\n<td><strong>TD(0)</strong></td>\n<td><marimo-tex class=\"arithmatex\">||(v_\\pi(s)||)</marimo-tex></td>\n<td><marimo-tex class=\"arithmatex\">||(r+\\gamma v(s')||)</marimo-tex></td>\n<td>\u8bc4\u4f30\u7ed9\u5b9a\u7b56\u7565</td>\n</tr>\n<tr>\n<td><strong>Sarsa</strong></td>\n<td><marimo-tex class=\"arithmatex\">||(q_\\pi(s,a)||)</marimo-tex></td>\n<td><marimo-tex class=\"arithmatex\">||(r+\\gamma q(s',a')||)</marimo-tex></td>\n<td>on-policy \u63a7\u5236</td>\n</tr>\n<tr>\n<td><strong>Expected Sarsa</strong></td>\n<td><marimo-tex class=\"arithmatex\">||(q_\\pi||)</marimo-tex></td>\n<td><marimo-tex class=\"arithmatex\">||(r+ \\gamma \\sum_{a'}\\pi(a'\\|s')q(s',a')||)</marimo-tex></td>\n<td>\u65b9\u5dee\u66f4\u5c0f</td>\n</tr>\n<tr>\n<td><strong>Q-learning</strong></td>\n<td><marimo-tex class=\"arithmatex\">||(q^*(s,a)||)</marimo-tex></td>\n<td><marimo-tex class=\"arithmatex\">||(r+\\gamma\\max_{a'}q(s',a')||)</marimo-tex></td>\n<td>off-policy \u63a7\u5236</td>\n</tr>\n</tbody>\n</table>\n<span class=\"paragraph\">\u672c\u7ae0\u91cd\u70b9\uff1a\u7528<strong>\u9010\u6b65\u56de\u653e\u6ed1\u5757</strong>\u770b Q-learning \u7684\u7b56\u7565\u5982\u4f55\u4ece\u6df7\u4e71<strong>\u5b66</strong>\u5230\u6700\u4f18\uff1b\n\u518d\u7528<strong>\u53c2\u6570\u6ed1\u5757 + \u8bad\u7ec3\u6309\u94ae</strong>\u4eb2\u624b\u8c03 \u03b1\u3001\u03b5\uff0c\u770b\u5bf9\u7ed3\u679c\u7684\u5f71\u54cd\u3002</span></span>"
+          }
+        }
+      ],
+      "console": []
+    },
+    {
+      "id": "MJUe",
+      "code_hash": "1705a8c0d6169fc1b02d556c5accfe9c",
+      "outputs": [],
+      "console": []
+    },
+    {
+      "id": "vblA",
+      "code_hash": "407b95003dc734506b885385085feb03",
+      "outputs": [],
+      "console": []
+    },
+    {
+      "id": "bkHC",
+      "code_hash": "68937a5205214dcaef3d1f3214b7726d",
+      "outputs": [
+        {
+          "type": "data",
+          "data": {
+            "text/markdown": "<span class=\"markdown prose dark:prose-invert contents\"><h2 id=\"q-learning\">\u516c\u5171\u90e8\u4ef6\uff1a\u5e26\u5feb\u7167\u8bb0\u5f55\u7684 Q-learning</h2>\n<span class=\"paragraph\">\u8bad\u7ec3\u65f6\u6bcf\u9694\u82e5\u5e72 episode \u5b58\u4e00\u5f20\"\u7b56\u7565 + \u4ef7\u503c\"\u5feb\u7167\uff0c\u65b9\u4fbf\u4e4b\u540e<strong>\u9010\u6b65\u56de\u653e</strong>\u5b66\u4e60\u8fc7\u7a0b\u3002\n\u91c7\u7528 exploring start\uff08\u6bcf\u4e2a episode \u968f\u673a\u8d77\u70b9\uff09\u4ee5\u8986\u76d6\u6240\u6709\u72b6\u6001\u3002</span></span>"
+          }
+        }
+      ],
+      "console": []
+    },
+    {
+      "id": "lEQa",
+      "code_hash": "b0989367379c657dd32807db1786d860",
+      "outputs": [],
+      "console": []
+    },
+    {
+      "id": "PKri",
+      "code_hash": "3906d8caec3fa24f5fffa8101e099c96",
+      "outputs": [
+        {
+          "type": "data",
+          "data": {
+            "text/markdown": "<span class=\"markdown prose dark:prose-invert contents\"><h3 id=\"q-learning\">\ud83c\udf9b\ufe0f \u9010\u6b65\u56de\u653e\uff1a\u62d6\u52a8\u6ed1\u5757\uff0c\u770b Q-learning \u7684\u7b56\u7565\u4e00\u70b9\u70b9\u5b66\u51fa\u6765</h3></span>"
+          }
+        }
+      ],
+      "console": []
+    },
+    {
+      "id": "Xref",
+      "code_hash": "6addea35025c2f4f4506e41976d68db3",
+      "outputs": [],
+      "console": []
+    },
+    {
+      "id": "SFPL",
+      "code_hash": "c659887abefce7caf7133a99d8189b8e",
+      "outputs": [],
+      "console": []
+    },
+    {
+      "id": "BYtC",
+      "code_hash": "cdbf5a26545e8b82361a61220fbc1340",
+      "outputs": [],
+      "console": []
+    },
+    {
+      "id": "RGSE",
+      "code_hash": "1fa47974712e0035d467b5378f53c66b",
+      "outputs": [
+        {
+          "type": "data",
+          "data": {
+            "text/markdown": "<span class=\"markdown prose dark:prose-invert contents\"><span class=\"paragraph\">\u628a\u6ed1\u5757\u4ece\u5de6\u62d6\u5230\u53f3\uff1a\u7bad\u5934\u4ece\u968f\u673a\u4e71\u6307\u9010\u6e10\u5bf9\u9f50\u6210\u901a\u5f80\u76ee\u6807\u3001\u7ed5\u5f00\u7981\u533a\u7684\u6700\u4f18\u8def\u7ebf\uff0c\n\u683c\u5b50\u6570\u503c\u4e5f\u540c\u6b65\u6536\u655b\u3002\u8fd9\u5c31\u662f\"\u5b66\u4e60\"\u5728\u53d1\u751f\u3002</span>\n<h2 id=\"_1\">\ud83c\udf9b\ufe0f \u4eb2\u624b\u8c03\u53c2\uff1a\u6539 \u03b1\u3001\u03b5\uff0c\u70b9\u6309\u94ae\u91cd\u65b0\u8bad\u7ec3</h2>\n<ul>\n<li><strong>\u03b1\uff08\u5b66\u4e60\u7387\uff09</strong>\uff1a\u592a\u5c0f\u5b66\u5f97\u6162\uff0c\u592a\u5927\u4e0d\u7a33\u5b9a\u3002</li>\n<li><strong>\u03b5\uff08\u63a2\u7d22\u7387\uff09</strong>\uff1a\u592a\u5c0f\u53ef\u80fd\u63a2\u7d22\u4e0d\u8db3\u9677\u5165\u6b21\u4f18\uff0c\u592a\u5927\u5b66\u5230\u7684\u7b56\u7565\u504f\"\u8f6f\"\u3002</li>\n</ul></span>"
+          }
+        }
+      ],
+      "console": []
+    },
+    {
+      "id": "Kclp",
+      "code_hash": "7b1a0ed6d36140a3f665a8463667f2e9",
+      "outputs": [],
+      "console": []
+    },
+    {
+      "id": "emfo",
+      "code_hash": "38aa2d9b01c4f3cb7bda31cb4db5e841",
+      "outputs": [],
+      "console": []
+    },
+    {
+      "id": "Hstk",
+      "code_hash": "ca15db3e62dc9aa0fe948ab937119a5d",
+      "outputs": [
+        {
+          "type": "data",
+          "data": {
+            "text/markdown": "<span class=\"markdown prose dark:prose-invert contents\"><h2 id=\"sarsa-vs-q-learning\">Sarsa vs Q-learning\uff1a\u5b66\u4e60\u66f2\u7ebf</h2>\n<span class=\"paragraph\">Sarsa \u662f on-policy\uff08\u5b66\"\u542b\u63a2\u7d22\u7684\u7b56\u7565\"\u7684\u503c\uff09\uff0cQ-learning \u662f off-policy\uff08\u76f4\u63a5\u5b66 <marimo-tex class=\"arithmatex\">||(q^*||)</marimo-tex>\uff09\u3002</span></span>"
+          }
+        }
+      ],
+      "console": []
+    },
+    {
+      "id": "nWHF",
+      "code_hash": "1e7daab8321817f3eefd518378b7168c",
+      "outputs": [],
+      "console": []
+    },
+    {
+      "id": "iLit",
+      "code_hash": "f04f1a145cceabe5029633c9d1de6b90",
+      "outputs": [],
+      "console": []
+    },
+    {
+      "id": "ZHCJ",
+      "code_hash": "4860dfcdba5f9ec64f8ebdc827e0cf85",
+      "outputs": [],
+      "console": []
+    },
+    {
+      "id": "ROlb",
+      "code_hash": "cd892206492a42cf5f2405d5c268f326",
+      "outputs": [
+        {
+          "type": "data",
+          "data": {
+            "text/markdown": "<span class=\"markdown prose dark:prose-invert contents\"><h2 id=\"_1\">\u5c0f\u7ed3</h2>\n<ul>\n<li>TD \u5728\u7ebf\u3001\u65e0\u6a21\u578b\u5730\u5b66 <marimo-tex class=\"arithmatex\">||(v||)</marimo-tex> \u6216 <marimo-tex class=\"arithmatex\">||(q||)</marimo-tex>\uff1b<strong>on-policy (Sarsa)</strong> vs <strong>off-policy (Q-learning)</strong>\u3002</li>\n<li>\u4f60\u5df2\u7ecf\u80fd<strong>\u9010\u6b65\u56de\u653e</strong>\u5b66\u4e60\u8fc7\u7a0b\u3001\u5e76<strong>\u4eb2\u624b\u8c03\u53c2</strong>\u91cd\u8bad\u3002</li>\n<li>\u4ee5\u4e0a\u662f<strong>\u8868\u683c\u578b</strong>\uff08\u6bcf\u4e2a <marimo-tex class=\"arithmatex\">||((s,a)||)</marimo-tex> \u5b58\u4e00\u4e2a\u6570\uff09\u3002\u72b6\u6001\u4e00\u591a\u5c31\u5b58\u4e0d\u4e0b\uff0c\n  \u4e0b\u4e00\u7ae0\u7528<strong>\u51fd\u6570\u8fd1\u4f3c</strong>\u628a\u8868\u683c\u6362\u6210\u53c2\u6570\u5316\u51fd\u6570\u3002</li>\n</ul></span>"
+          }
+        }
+      ],
+      "console": []
+    },
+    {
+      "id": "qnkX",
+      "code_hash": "1d0db38904205bec4d6f6f6a1f6cec3e",
+      "outputs": [],
+      "console": []
+    }
+  ]
+}
