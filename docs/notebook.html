@@ -54,7 +54,7 @@
 </head>
 <body>
   <div class="bar">
-    <a class="back" href="index.html">‹ 返回</a>
+    <a class="back" id="backLink" href="index.html">‹ 返回</a>
     <span class="vtitle" id="vtitle">RLStudio</span>
     <span class="spacer"></span>
     <a class="molab" id="molab" target="_blank" rel="noopener" style="display:none">
@@ -76,6 +76,11 @@
   const stage = document.getElementById("stage");
   const titleEl = document.getElementById("vtitle");
   const molabEl = document.getElementById("molab");
+
+  // 返回时回到来源分区（带 from 参数），否则回首页
+  const from = q.get("from");
+  document.getElementById("backLink").href =
+    from ? `index.html#/section/${encodeURIComponent(from)}` : "index.html";
 
   function iframe(src) {
     stage.innerHTML =

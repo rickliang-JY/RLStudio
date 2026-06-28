@@ -11,30 +11,28 @@
   :root {
     --bg:           #fbfbfd;
     --surface:      #ffffff;
-    --text:         #18181b;
+    --text:         #1d1d1f;
     --muted:        #6b6b72;
     --faint:        #9a9aa2;
     --border:       #ececef;
     --border-strong:#dcdce1;
-    --thumb-bg:     #f4f4f6;
-    --thumb-fg:     #c0c0c8;
 
     --accent:       #2b6cf0;
     --accent-deep:  #1a4fd0;
     --accent-soft:  #eef3fe;
 
-    --radius-lg: 18px;
-    --radius:    13px;
+    --radius-lg: 20px;
+    --radius:    14px;
     --radius-sm: 9px;
 
-    --maxw: 1080px;
+    --maxw: 1140px;
+    --gap:  20px;
 
-    --shadow-card:  0 1px 2px rgba(20,23,40,.04), 0 10px 30px rgba(20,23,40,.05);
-    --shadow-hover: 0 2px 5px rgba(20,23,40,.05), 0 20px 44px rgba(43,108,240,.13);
+    --shadow-card:  0 1px 2px rgba(20,23,40,.04), 0 8px 24px rgba(20,23,40,.05);
+    --shadow-hover: 0 2px 4px rgba(20,23,40,.05), 0 18px 40px rgba(43,108,240,.13);
 
     --font: -apple-system, BlinkMacSystemFont, "Segoe UI", system-ui, "PingFang SC",
             "Microsoft YaHei", "Hiragino Sans GB", "Noto Sans CJK SC", sans-serif;
-    --serif: "Georgia", "Songti SC", "Times New Roman", serif;
     --mono: ui-monospace, "SF Mono", "JetBrains Mono", Menlo, Consolas, monospace;
   }
 
@@ -48,7 +46,9 @@
   a { color: inherit; text-decoration: none; }
   .wrap { max-width: var(--maxw); margin: 0 auto; padding: 0 24px; }
 
-  /* ============================================================ header */
+  /* ============================================================
+     顶部 header
+     ============================================================ */
   header.site {
     position: sticky; top: 0; z-index: 50;
     background: rgba(251,251,253,.78);
@@ -75,7 +75,35 @@
   .nav-links .ghbtn:hover { border-color: var(--accent); background: var(--accent-soft); }
   @media (max-width: 640px) { .nav-links .hide-sm { display: none; } }
 
-  /* ============================================================ buttons */
+  /* ============================================================
+     Hero —— 全屏欢迎页 + Canvas 寻路动画
+     ============================================================ */
+  .hero {
+    position: relative; min-height: calc(100vh - 60px);
+    display: flex; align-items: center; overflow: hidden;
+  }
+  #grid-canvas { position: absolute; inset: 0; width: 100%; height: 100%; z-index: 0; }
+  .hero::after { /* 让动画两侧淡出，文字更清晰 */
+    content: ""; position: absolute; inset: 0; z-index: 1; pointer-events: none;
+    background:
+      radial-gradient(120% 80% at 20% 50%, var(--bg) 18%, transparent 70%),
+      linear-gradient(to bottom, transparent 60%, var(--bg) 100%);
+  }
+  .hero .wrap { position: relative; z-index: 2; padding: 40px 24px; }
+  .hero .eyebrow {
+    display: inline-flex; align-items: center; gap: 8px; font-size: 13px; font-weight: 560;
+    color: var(--accent); background: var(--accent-soft); padding: 5px 13px; border-radius: 999px;
+    margin-bottom: 24px;
+  }
+  .hero .eyebrow .dot { width: 6px; height: 6px; border-radius: 50%; background: var(--accent); animation: pulse 2s infinite; }
+  @keyframes pulse { 0%,100%{opacity:1;transform:scale(1)} 50%{opacity:.4;transform:scale(.7)} }
+  .hero h1 {
+    font-size: clamp(44px, 7vw, 82px); line-height: 1.02; letter-spacing: -.04em;
+    margin: 0 0 20px; font-weight: 700; max-width: 12ch;
+  }
+  .hero h1 .accent { color: var(--accent); }
+  .hero .lede { font-size: clamp(17px, 2.2vw, 21px); color: var(--muted); max-width: 52ch; margin: 0 0 36px; }
+  .cta-row { display: flex; flex-wrap: wrap; gap: 14px; align-items: center; }
   .btn {
     display: inline-flex; align-items: center; gap: 9px; font-size: 15.5px; font-weight: 580;
     cursor: pointer; padding: 13px 22px; border-radius: 999px; border: 1px solid transparent;
@@ -87,200 +115,252 @@
     width: 20px; height: 20px; border-radius: 50%; background: rgba(255,255,255,.22);
     display: inline-flex; align-items: center; justify-content: center; font-size: 9px;
   }
-  .btn-ghost { color: var(--text); border-color: var(--border-strong); background: var(--surface); }
+  .btn-ghost { color: var(--text); border-color: var(--border-strong); background: rgba(255,255,255,.7); }
   .btn-ghost:hover { border-color: var(--accent); color: var(--accent); transform: translateY(-2px); }
+  .scroll-cue {
+    position: absolute; bottom: 26px; left: 50%; transform: translateX(-50%); z-index: 2;
+    display: flex; flex-direction: column; align-items: center; gap: 7px;
+    font-size: 12px; color: var(--faint); letter-spacing: .05em;
+  }
+  .scroll-cue .mouse {
+    width: 22px; height: 34px; border: 1.5px solid var(--border-strong); border-radius: 12px; position: relative;
+  }
+  .scroll-cue .mouse::before {
+    content: ""; position: absolute; top: 6px; left: 50%; transform: translateX(-50%);
+    width: 3px; height: 6px; border-radius: 2px; background: var(--accent); animation: wheel 1.6s infinite;
+  }
+  @keyframes wheel { 0%{opacity:0;transform:translate(-50%,0)} 30%{opacity:1} 100%{opacity:0;transform:translate(-50%,9px)} }
 
-  /* ============================================================ hero */
-  .hero .wrap {
-    display: grid; grid-template-columns: 1.05fr 1fr; gap: 54px; align-items: center;
-    padding-top: 76px; padding-bottom: 60px;
+  /* ============================================================
+     介绍区
+     ============================================================ */
+  .intro { padding: 96px 0 40px; }
+  .intro .lead {
+    font-size: clamp(22px, 3vw, 30px); line-height: 1.45; letter-spacing: -.02em;
+    font-weight: 580; max-width: 22ch; margin: 0 0 12px;
   }
-  .hero .eyebrow {
-    display: inline-flex; align-items: center; gap: 8px; font-size: 13px; font-weight: 560;
-    color: var(--accent); background: var(--accent-soft); padding: 5px 13px; border-radius: 999px;
-    margin-bottom: 22px;
+  .intro .lead .soft { color: var(--faint); }
+  .feat-grid {
+    display: grid; gap: var(--gap); margin-top: 52px;
+    grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
   }
-  .hero .eyebrow .dot { width: 6px; height: 6px; border-radius: 50%; background: var(--accent); }
-  .hero h1 {
-    font-size: clamp(38px, 5.4vw, 60px); line-height: 1.05; letter-spacing: -.035em;
-    margin: 0 0 18px; font-weight: 700;
+  .feat { padding: 4px 0; }
+  .feat .ico {
+    width: 40px; height: 40px; border-radius: 11px; background: var(--accent-soft); color: var(--accent);
+    display: flex; align-items: center; justify-content: center; font-size: 19px; margin-bottom: 15px;
   }
-  .hero h1 .accent { color: var(--accent); }
-  .hero .lede { font-size: clamp(16px, 2vw, 19px); color: var(--muted); margin: 0 0 32px; max-width: 46ch; }
-  .cta-row { display: flex; flex-wrap: wrap; gap: 14px; align-items: center; }
+  .feat h4 { font-size: 16.5px; font-weight: 630; margin: 0 0 6px; letter-spacing: -.01em; }
+  .feat p { font-size: 14.5px; color: var(--muted); margin: 0; }
 
-  /* 动画面板 */
-  .sim-panel {
-    background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius-lg);
-    box-shadow: var(--shadow-card); padding: 16px; overflow: hidden;
-  }
-  .sim-panel .sim-head {
-    display: flex; align-items: center; justify-content: space-between;
-    font-size: 12px; color: var(--faint); margin-bottom: 12px; padding: 2px 4px;
-    font-family: var(--mono); letter-spacing: .04em;
-  }
-  .sim-panel .sim-head .live { display: inline-flex; align-items: center; gap: 6px; color: var(--accent); }
-  .sim-panel .sim-head .live i {
-    width: 7px; height: 7px; border-radius: 50%; background: var(--accent);
-    animation: pulse 1.6s ease-in-out infinite;
-  }
-  @keyframes pulse { 0%,100% { opacity: 1; transform: scale(1); } 50% { opacity: .35; transform: scale(.7); } }
-  #sim { display: block; width: 100%; height: auto; border-radius: 10px; }
-
-  @media (max-width: 860px) {
-    .hero .wrap { grid-template-columns: 1fr; gap: 36px; padding-top: 56px; }
-    .hero .sim-panel { order: -1; }
-  }
-
-  /* ============================================================ intro */
-  .intro { border-top: 1px solid var(--border); background: var(--surface); }
-  .intro .wrap { padding: 70px 24px; }
-  .section-kicker {
+  /* ============================================================
+     分区选择（首页）
+     ============================================================ */
+  .chapters { padding: 70px 0 96px; }
+  .sec-head { margin-bottom: 30px; }
+  .sec-head .kicker {
     font-family: var(--mono); font-size: 12.5px; letter-spacing: .14em; color: var(--accent);
     font-weight: 600; text-transform: uppercase;
   }
-  .intro h2 { font-size: clamp(26px, 3.2vw, 34px); letter-spacing: -.025em; font-weight: 680; margin: 10px 0 14px; max-width: 18ch; }
-  .intro .intro-lede { color: var(--muted); font-size: 17px; max-width: 60ch; margin: 0 0 40px; }
-  .feat-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 20px; }
-  @media (max-width: 760px) { .feat-grid { grid-template-columns: 1fr; } }
-  .feat { padding: 22px 22px 24px; border: 1px solid var(--border); border-radius: var(--radius); background: var(--bg); }
-  .feat .ic {
-    width: 38px; height: 38px; border-radius: 10px; background: var(--accent-soft); color: var(--accent);
-    display: inline-flex; align-items: center; justify-content: center; font-size: 19px; margin-bottom: 14px;
-  }
-  .feat h4 { margin: 0 0 6px; font-size: 16.5px; font-weight: 640; }
-  .feat p { margin: 0; color: var(--muted); font-size: 14.5px; line-height: 1.6; }
+  .sec-head h2 { font-size: clamp(26px, 3.4vw, 36px); letter-spacing: -.03em; font-weight: 680; margin: 10px 0 0; }
 
-  /* ============================================================ chapter picker (home) */
-  .chapters { padding: 74px 0 96px; }
-  .chapters .head { margin-bottom: 30px; }
-  .chapters h2 { font-size: clamp(26px, 3.2vw, 34px); letter-spacing: -.025em; font-weight: 680; margin: 10px 0 0; }
-  .ch-grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 18px; }
-  @media (max-width: 720px) { .ch-grid { grid-template-columns: 1fr; } }
-  .ch-card {
-    display: flex; flex-direction: column; padding: 26px 26px 24px; background: var(--surface);
-    border: 1px solid var(--border); border-radius: var(--radius); cursor: pointer; position: relative;
-    box-shadow: var(--shadow-card);
-    transition: transform .2s cubic-bezier(.2,.7,.3,1), box-shadow .25s, border-color .2s;
+  .sec-grid { display: grid; gap: var(--gap); grid-template-columns: repeat(auto-fill, minmax(330px, 1fr)); }
+  .sec-card {
+    position: relative; display: flex; flex-direction: column; background: var(--surface);
+    border: 1px solid var(--border); border-radius: var(--radius-lg); padding: 26px 26px 22px;
+    cursor: pointer; min-height: 220px;
+    transition: transform .22s cubic-bezier(.2,.7,.3,1), box-shadow .25s, border-color .2s;
+    box-shadow: var(--shadow-card); overflow: hidden;
   }
-  .ch-card:hover { transform: translateY(-5px); border-color: color-mix(in srgb, var(--accent) 55%, var(--border)); box-shadow: var(--shadow-hover); }
-  .ch-card .ch-top { display: flex; align-items: baseline; gap: 12px; margin-bottom: 14px; }
-  .ch-card .ch-no { font-family: var(--mono); font-size: 13px; color: var(--accent); font-weight: 600; letter-spacing: .06em; }
-  .ch-card .ch-count { margin-left: auto; font-size: 13px; color: var(--faint); }
-  .ch-card h3 { margin: 0 0 6px; font-size: 21px; font-weight: 660; letter-spacing: -.02em; }
-  .ch-card p { margin: 0; color: var(--muted); font-size: 14.5px; line-height: 1.55; }
-  .ch-card .go { margin-top: 18px; font-size: 14px; font-weight: 560; color: var(--accent); display: inline-flex; align-items: center; gap: 6px; }
-  .ch-card.is-soon { opacity: .8; }
-  .ch-card .pill { margin-left: auto; font-size: 11px; font-weight: 600; padding: 3px 10px; border-radius: 999px; background: #f1f1f4; color: var(--faint); }
+  .sec-card:hover { transform: translateY(-6px); border-color: color-mix(in srgb, var(--accent) 50%, var(--border)); box-shadow: var(--shadow-hover); }
+  .sec-card .idx {
+    font-family: var(--mono); font-size: 12.5px; letter-spacing: .12em; color: var(--accent); font-weight: 600;
+  }
+  .sec-card h3 { font-size: 22px; font-weight: 660; letter-spacing: -.02em; margin: 12px 0 8px; }
+  .sec-card p { font-size: 14.5px; color: var(--muted); margin: 0; flex: 1; }
+  .sec-card .foot {
+    display: flex; align-items: center; justify-content: space-between; margin-top: 20px;
+    padding-top: 16px; border-top: 1px solid var(--border);
+  }
+  .sec-card .count { font-size: 13px; color: var(--faint); }
+  .sec-card .go {
+    display: inline-flex; align-items: center; gap: 6px; font-size: 14px; font-weight: 580; color: var(--accent);
+    transition: gap .2s;
+  }
+  .sec-card:hover .go { gap: 11px; }
+  .sec-card.is-soon { opacity: .92; }
+  .sec-card.is-soon .idx, .sec-card.is-soon .go { color: var(--faint); }
+  .sec-card .badge-soon {
+    position: absolute; top: 22px; right: 22px; font-size: 11px; font-weight: 600;
+    background: #f1f1f4; color: var(--faint); padding: 3px 10px; border-radius: 999px;
+  }
 
-  /* ============================================================ section detail */
-  .detail { padding: 40px 0 96px; }
+  /* ============================================================
+     语言切换按钮
+     ============================================================ */
+  .langbtn {
+    font-family: var(--font); cursor: pointer; font-size: 13px; font-weight: 560;
+    color: var(--muted); background: transparent; border: 1px solid var(--border-strong);
+    border-radius: 999px; padding: 6px 13px; min-width: 46px; text-align: center;
+    transition: border-color .18s, background .18s, color .18s;
+  }
+  .langbtn:hover { border-color: var(--accent); color: var(--accent); background: var(--accent-soft); }
+
+  /* ============================================================
+     参考文献条目（子页）
+     ============================================================ */
+  .refitem {
+    position: relative; background: var(--surface); border: 1px solid var(--border);
+    border-radius: var(--radius); padding: 20px 22px; box-shadow: var(--shadow-card);
+  }
+  .ref-top { display: flex; align-items: center; gap: 11px; flex-wrap: wrap; margin-bottom: 9px; }
+  .ref-type {
+    font-family: var(--mono); font-size: 11.5px; font-weight: 600; letter-spacing: .04em;
+    color: var(--accent); background: var(--accent-soft); padding: 2px 9px; border-radius: 999px; flex: none;
+  }
+  .ref-top h3 { font-size: 17.5px; font-weight: 640; letter-spacing: -.015em; margin: 0; }
+  .ref-cite { font-size: 14px; color: var(--muted); margin: 0 0 14px; }
+  .ref-bibwrap { position: relative; }
+  .ref-copy {
+    position: absolute; top: 10px; right: 10px; z-index: 2; cursor: pointer; font-family: var(--font);
+    font-size: 12px; font-weight: 560; color: var(--accent); background: var(--accent-soft);
+    border: 1px solid transparent; border-radius: 999px; padding: 5px 11px;
+    transition: background .18s, border-color .18s, color .18s;
+  }
+  .ref-copy:hover { border-color: var(--accent); }
+  .ref-copy.done { color: #1a7f37; background: #e7f6ec; }
+  .ref-bib {
+    margin: 0; padding: 15px 16px; background: var(--bg); border: 1px solid var(--border);
+    border-radius: var(--radius-sm); overflow-x: auto;
+    font-family: var(--mono); font-size: 12.5px; line-height: 1.6; color: var(--text); white-space: pre;
+  }
+  .ref-bib code { font-family: inherit; }
+  .ref-link {
+    display: inline-flex; align-items: center; gap: 6px; margin-top: 12px;
+    font-size: 13.5px; font-weight: 560; color: var(--accent);
+  }
+  .ref-link:hover { text-decoration: underline; }
+
+  /* ============================================================
+     章节子页（#/section/...）
+     ============================================================ */
+  .detail { padding: 50px 0 96px; }
   .back {
     display: inline-flex; align-items: center; gap: 7px; font-size: 14px; color: var(--muted);
-    margin-bottom: 30px; transition: color .18s;
+    margin-bottom: 30px; transition: color .18s, gap .18s;
   }
-  .back:hover { color: var(--accent); }
-  .detail-head { border-bottom: 1px solid var(--border); padding-bottom: 28px; margin-bottom: 8px; max-width: 760px; }
-  .detail-head h1 { font-size: clamp(30px, 4vw, 42px); letter-spacing: -.03em; font-weight: 700; margin: 12px 0 10px; }
-  .detail-head p { color: var(--muted); font-size: 16.5px; margin: 0; }
+  .back:hover { color: var(--accent); gap: 11px; }
+  .detail-head { margin-bottom: 38px; max-width: 760px; }
+  .detail-head .kicker {
+    font-family: var(--mono); font-size: 12.5px; letter-spacing: .14em; color: var(--accent);
+    font-weight: 600; text-transform: uppercase;
+  }
+  .detail-head h1 { font-size: clamp(30px, 4.4vw, 46px); letter-spacing: -.035em; font-weight: 700; margin: 11px 0 10px; }
+  .detail-head p { font-size: 16.5px; color: var(--muted); margin: 0; }
 
-  .rows { display: flex; flex-direction: column; }
-  .row {
-    display: grid; grid-template-columns: 208px 1fr; gap: 30px; align-items: center;
-    padding: 30px 0; border-bottom: 1px solid var(--border); cursor: pointer;
+  .lessons { display: flex; flex-direction: column; gap: 14px; }
+  .lesson {
+    display: grid; grid-template-columns: 168px 1fr auto; align-items: center; gap: 24px;
+    background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius);
+    padding: 16px; cursor: pointer; box-shadow: var(--shadow-card);
+    transition: transform .2s cubic-bezier(.2,.7,.3,1), box-shadow .25s, border-color .2s;
   }
-  .row:last-child { border-bottom: none; }
-  .row .thumb {
-    width: 208px; height: 156px; border-radius: var(--radius); background: var(--thumb-bg);
-    display: flex; align-items: center; justify-content: center; overflow: hidden; flex: none;
-    transition: transform .25s ease, box-shadow .25s;
+  .lesson:hover { transform: translateY(-3px); border-color: color-mix(in srgb, var(--accent) 50%, var(--border)); box-shadow: var(--shadow-hover); }
+  .lesson .thumb {
+    width: 168px; height: 112px; border-radius: 10px; overflow: hidden; flex: none;
+    background: var(--accent-soft); border: 1px solid var(--border);
   }
-  .row .thumb span { font-family: var(--serif); font-size: 40px; color: var(--thumb-fg); letter-spacing: .02em; line-height: 1; }
-  .row .body { min-width: 0; }
-  .row .meta {
-    font-size: 12px; letter-spacing: .1em; text-transform: uppercase; color: var(--faint);
-    font-weight: 600; margin-bottom: 11px; display: flex; align-items: center; gap: 10px; flex-wrap: wrap;
+  .lesson .thumb svg { display: block; width: 100%; height: 100%; }
+  .lesson .body { min-width: 0; }
+  .lesson .ltop { display: flex; align-items: center; gap: 10px; margin-bottom: 7px; flex-wrap: wrap; }
+  .lesson .lnum {
+    font-family: var(--mono); font-size: 12px; font-weight: 600; color: var(--accent);
+    background: var(--accent-soft); padding: 2px 8px; border-radius: 6px;
   }
-  .row .meta .tag {
-    text-transform: none; letter-spacing: 0; font-size: 11px; font-weight: 600; padding: 2px 9px;
-    border-radius: 999px; background: #fff3e6; color: #c2660a; border: 1px solid #f6dcbb;
+  .lesson h3 { font-size: 18px; font-weight: 640; letter-spacing: -.015em; margin: 0; }
+  .lesson .meta { display: flex; align-items: center; gap: 14px; margin-bottom: 8px; font-size: 12.5px; color: var(--faint); flex-wrap: wrap; }
+  .lesson .meta .m { display: inline-flex; align-items: center; gap: 5px; }
+  .lesson .meta .torch {
+    color: #c2660a; background: #fff3e6; border: 1px solid #f6dcbb; padding: 1px 8px; border-radius: 999px; font-weight: 600;
   }
-  .row h3 { font-size: 22px; font-weight: 660; letter-spacing: -.02em; margin: 0 0 9px; transition: color .18s; }
-  .row .desc { color: var(--muted); font-size: 15.5px; line-height: 1.62; margin: 0 0 16px; max-width: 60ch; }
-  .row .read { font-size: 14px; font-weight: 560; color: var(--text); display: inline-flex; align-items: center; gap: 6px; transition: color .18s, gap .18s; }
-  .row .read .ar { transition: transform .2s; }
+  .lesson .desc { font-size: 14px; color: var(--muted); margin: 0; max-width: 62ch; }
+  .lesson .chev { font-size: 20px; color: var(--faint); padding-right: 8px; transition: transform .2s, color .2s; }
+  .lesson:hover .chev { transform: translateX(4px); color: var(--accent); }
 
-  .row:hover .thumb { transform: translateY(-3px); box-shadow: var(--shadow-hover); }
-  .row:hover h3 { color: var(--accent); }
-  .row:hover .read { color: var(--accent); gap: 9px; }
-  .row:hover .read .ar { transform: translate(2px, -2px); }
-
-  .row.is-soon { cursor: not-allowed; }
-  .row.is-soon .thumb { background: repeating-linear-gradient(135deg, #f6f6f8 0 10px, #f1f1f4 10px 20px); }
-  .row.is-soon:hover .thumb { transform: none; box-shadow: none; }
-  .row.is-soon h3 { color: var(--muted); }
-  .row.is-soon:hover h3 { color: var(--muted); }
-  .row.is-soon .read { color: var(--faint); }
+  .lesson.soon { cursor: not-allowed; border-style: dashed; box-shadow: none; background: transparent; }
+  .lesson.soon:hover { transform: none; box-shadow: none; border-color: var(--border-strong); }
+  .lesson.soon .thumb { background: #f5f5f7; opacity: .7; }
+  .lesson.soon h3 { color: var(--muted); }
+  .lesson.soon .lnum { background: #f1f1f4; color: var(--faint); }
 
   @media (max-width: 680px) {
-    .row { grid-template-columns: 1fr; gap: 16px; }
-    .row .thumb { width: 100%; height: 150px; }
+    .lesson { grid-template-columns: 1fr; gap: 14px; }
+    .lesson .thumb { width: 100%; height: 150px; }
+    .lesson .chev { display: none; }
   }
 
-  /* ============================================================ footer */
+  /* footer */
   footer { border-top: 1px solid var(--border); padding: 34px 0 48px; color: var(--faint); font-size: 13.5px; }
   footer .wrap { display: flex; flex-wrap: wrap; gap: 8px 18px; justify-content: space-between; align-items: center; }
   footer a:hover { color: var(--accent); }
 
-  .view { animation: fade .4s ease both; }
-  @keyframes fade { from { transform: translateY(8px); } to { transform: none; } }
+  .hidden { display: none !important; }
 </style>
 </head>
 <body>
 
 <!-- ============================================================
-     单一数据源：以后加章节只改这个数组
-     status: "open" | "soon" | "pdf"
+     单一数据源 —— 以后加章节只改这个数组
+     section.status: "open" | "soon"
+     card.status:    "open" | "soon" | "pdf"
      ============================================================ -->
 <script>
+  // 每个字段都是 { zh, en }，渲染时按当前语言取值
   const TOPICS = [
-    "基本概念", "贝尔曼方程", "贝尔曼最优方程", "值-策略迭代", "蒙特卡洛",
-    "随机近似", "时序差分", "值函数近似 · DQN", "策略梯度", "Actor-Critic"
+    { t: { zh: "基本概念", en: "Basic Concepts" },
+      d: { zh: "状态、动作、奖励、策略与回报——搭起强化学习的语言，把一个智能体如何与环境互动讲清楚。",
+           en: "State, action, reward, policy and return — the vocabulary of RL, making it clear how an agent interacts with its environment." },
+      time: 14, level: { zh: "入门", en: "Intro" } },
+    { t: { zh: "贝尔曼方程", en: "Bellman Equation" },
+      d: { zh: "用一个递归关系把状态值串联起来：当前的好坏，等于眼下的奖励加上未来的折扣价值。",
+           en: "A recursive relation linking state values: how good things are now equals the immediate reward plus the discounted value of the future." },
+      time: 18, level: { zh: "入门", en: "Intro" } },
+    { t: { zh: "贝尔曼最优方程", en: "Bellman Optimality" },
+      d: { zh: "在所有策略中取最优，得到最优状态值与最优策略，理解“最好能做到多好”。",
+           en: "Take the best over all policies to get the optimal state values and policy — understanding how good the best we can do really is." },
+      time: 20, level: { zh: "入门", en: "Intro" } },
+    { t: { zh: "值-策略迭代", en: "Value & Policy Iteration" },
+      d: { zh: "已知模型时用动态规划求解：策略评估与策略改进交替，或直接做值迭代收敛到最优。",
+           en: "Solve with dynamic programming when the model is known: alternate policy evaluation and improvement, or run value iteration to the optimum." },
+      time: 22, level: { zh: "入门", en: "Intro" } },
+    { t: { zh: "蒙特卡洛", en: "Monte Carlo" },
+      d: { zh: "不需要环境模型，靠大量采样的回报来估计值函数——第一类真正“从经验中学”的方法。",
+           en: "No model needed: estimate value functions from many sampled returns — the first methods that truly learn from experience." },
+      time: 22, level: { zh: "进阶", en: "Advanced" } },
+    { t: { zh: "随机近似", en: "Stochastic Approximation" },
+      d: { zh: "Robbins-Monro 与随机梯度的理论基础，解释为什么用噪声样本也能逐步逼近真值。",
+           en: "The theory behind Robbins-Monro and stochastic gradients, explaining why noisy samples can still converge to the true value." },
+      time: 24, level: { zh: "进阶", en: "Advanced" } },
+    { t: { zh: "时序差分", en: "Temporal Difference" },
+      d: { zh: "TD(0)、Sarsa 与 Q-learning：边走边更新，把蒙特卡洛与动态规划的优点结合起来。",
+           en: "TD(0), Sarsa and Q-learning: update as you go, combining the strengths of Monte Carlo and dynamic programming." },
+      time: 26, level: { zh: "进阶", en: "Advanced" } },
+    { t: { zh: "值函数近似 · DQN", en: "Value Approximation · DQN" },
+      d: { zh: "状态空间太大时用神经网络近似 Q 值，配合经验回放与目标网络——深度强化学习的起点。",
+           en: "When the state space is too large, approximate Q-values with a neural network, plus replay and a target network — the start of deep RL." },
+      time: 30, level: { zh: "进阶", en: "Advanced" }, torch: true },
+    { t: { zh: "策略梯度", en: "Policy Gradient" },
+      d: { zh: "跳过值函数，直接对策略参数求梯度上升，REINFORCE 让我们能学连续、随机的策略。",
+           en: "Skip the value function and ascend the gradient of the policy parameters directly; REINFORCE lets us learn continuous, stochastic policies." },
+      time: 28, level: { zh: "进阶", en: "Advanced" } },
+    { t: { zh: "Actor-Critic", en: "Actor-Critic" },
+      d: { zh: "把策略（actor）与值函数（critic）合在一起，用 critic 降低梯度方差、加速学习。",
+           en: "Combine the policy (actor) with a value function (critic), using the critic to cut gradient variance and speed up learning." },
+      time: 30, level: { zh: "进阶", en: "Advanced" } }
   ];
-  const BASIC_DESC = [
-    "建立 state / action / reward / policy / return 的语言，在网格世界里写下第一个 MDP。",
-    "用贝尔曼方程描述给定策略下的状态价值，并迭代求解它的收敛值。",
-    "最优价值与最优策略：压缩映射、不动点，以及贝尔曼最优方程的含义。",
-    "动态规划的两条路：值迭代与策略迭代，对比它们的收敛行为与代价。",
-    "无模型方法登场：用采样回报估计价值，MC exploring starts 与 ε-greedy。",
-    "Robbins-Monro 随机近似——从均值估计到随机梯度下降的桥梁。",
-    "TD(0)、Sarsa、Q-learning：在线、自举式地边走边学。",
-    "用神经网络逼近 Q 值：经验回放与目标网络让训练稳定下来（PyTorch 实现）。",
-    "绕过价值、直接对策略参数求梯度：REINFORCE 与基线的引入。",
-    "价值与策略协同：Actor-Critic 与优势函数的结构。"
-  ];
-  const EX_DESC = [
-    "可视化状态、动作、奖励在网格世界中的基本流转。",
-    "逐格显示给定策略下贝尔曼方程的迭代收敛过程。",
-    "用箭头图呈现最优策略，观察最优价值如何形成。",
-    "并排对比值迭代与策略迭代的收敛轮数。",
-    "蒙特卡洛采样轨迹与价值估计随样本增多的变化。",
-    "用随机近似演示均值如何在噪声中逐步逼近真值。",
-    "Sarsa 与 Q-learning 在同一网格上的学习曲线对比。",
-    "DQN 在网格世界上的训练：经验回放与目标网络的作用。",
-    "REINFORCE 的策略分布如何随梯度更新而集中。",
-    "Actor-Critic 中价值网络与策略网络的协同更新。"
-  ];
-  const pad = n => String(n).padStart(2, "0");
 
-  // ===== 配置：仓库与目录（以后改这里即可） =====
-  const REPO   = "rickliang-JY/RLStudio";
-  const BRANCH = "main";
-  const NB_DIR = "notebooks/foundations";
-  // 一个立即可跑的官方示例，用于首页"实时嵌入示例"按钮。
-  const DEMO_EMBED = "https://marimo.app/github/marimo-team/gallery-examples/blob/main/notebooks/math/cellular-automaton-art.py/wasm?embed=true";
+  const pad2 = n => String(n).padStart(2, "0");
 
-  // 基础章节对应的真实 marimo 文件名。
+  // 真实 notebook 文件名（notebooks/foundations/ 下），与各章一一对应
   const FOUND_FILES = [
     "ch01_basic_concepts.py", "ch02_bellman_equation.py", "ch03_bellman_optimality.py",
     "ch04_value_policy_iteration.py", "ch05_monte_carlo.py", "ch06_stochastic_approximation.py",
@@ -290,81 +370,90 @@
 
   const SECTIONS = [
     {
-      id: "basics",
-      no: "01",
-      kind: "ALGORITHM",
-      title: "强化学习的数学原理",
-      subtitle: "赵世钰《Mathematical Foundation of Reinforcement Learning》逐章算法实现。",
-      cards: TOPICS.map((t, i) => ({
-        thumb: pad(i + 1),
-        title: t,
-        kind: "ALGORITHM",
-        desc: BASIC_DESC[i],
-        nb: FOUND_FILES[i],
-        tags: i === 7 ? ["PyTorch"] : [],
-        torch: i === 7,
-        status: "open"
+      id: "basics", num: "01", group: { zh: "基础", en: "Foundations" },
+      title: { zh: "强化学习的数学原理", en: "Mathematical Foundations of RL" },
+      subtitle: { zh: "赵世钰《Mathematical Foundations of Reinforcement Learning》逐章算法实现",
+                  en: "Chapter-by-chapter algorithm implementations from S. Zhao's book" },
+      status: "open",
+      cards: TOPICS.map((x, i) => ({
+        n: i + 1, title: x.t, desc: x.d, time: x.time, level: x.level,
+        torch: !!x.torch, nb: FOUND_FILES[i], status: "open"
       }))
     },
     {
-      id: "examples",
-      no: "02",
-      kind: "EXAMPLE",
-      title: "书中例子复现",
-      subtitle: "把书里的经典插图例子做成可在浏览器里调的交互版本。",
-      cards: TOPICS.map((t, i) => ({
-        thumb: "Ex " + (i + 1),
-        title: `第 ${i + 1} 章例子 · ${t}`,
-        kind: "EXAMPLE",
-        desc: EX_DESC[i],
-        nb: `ch${pad(i + 1)}_examples.py`,
-        status: "open"
+      id: "examples", num: "02", group: { zh: "复现", en: "Reproductions" },
+      title: { zh: "书中例子复现", en: "Reproducing the Examples" },
+      subtitle: { zh: "把书里经典插图例子做成可交互版，亲手调一调就懂了",
+                  en: "The book's classic figure examples, made interactive — tweak them and they click." },
+      status: "open",
+      cards: TOPICS.map((x, i) => ({
+        n: i + 1,
+        title: { zh: `第 ${i + 1} 章例子 · ${x.t.zh}`, en: `Ch.${i + 1} Example · ${x.t.en}` },
+        desc: { zh: `复现书中第 ${i + 1} 章关于「${x.t.zh}」的经典插图例子，参数与地图都可现场修改、即时重算。`,
+                en: `Reproduce the book's classic figure example for Chapter ${i + 1} on "${x.t.en}" — tweak parameters and the map live, recompute instantly.` },
+        time: 10, level: { zh: "可交互", en: "Interactive" }, nb: `ch${pad2(i + 1)}_examples.py`, status: "open"
       }))
     },
     {
-      id: "lab",
-      no: "03",
-      kind: "PLAYGROUND",
-      title: "实验场",
-      subtitle: "自定义 grid world，随手改地图和参数。",
+      id: "lab", num: "03", group: { zh: "实验场", en: "Playground" },
+      title: { zh: "实验场", en: "Playground" },
+      subtitle: { zh: "自定义 grid world，随手改地图和参数",
+                  en: "Build your own grid world; change the map and parameters at will." },
+      status: "open",
       cards: [
-        {
-          thumb: "▦",
-          title: "Custom Grid World Lab",
-          kind: "PLAYGROUND",
-          desc: "自己画地图、设奖励、调折扣因子和探索率，实时看价值场与最优策略如何随之变化。",
-          nb: "custom_gridworld_lab.py",
-          status: "open"
-        }
+        { icon: "▦", title: { zh: "自定义网格世界实验场", en: "Custom Grid World Lab" },
+          desc: { zh: "拖滑块调奖励、折扣率与探索率，画笔改地图布局，实时观察策略与值函数随之变化。",
+                  en: "Drag sliders for rewards, discount and exploration; paint the map; watch the policy and value function update in real time." },
+          time: 0, level: { zh: "自由探索", en: "Free play" }, nb: "custom_gridworld_lab.py", status: "open" }
       ]
     },
     {
-      id: "advanced",
-      no: "04",
-      kind: "RESEARCH",
-      title: "现代策略优化",
-      subtitle: "敬请期待。",
+      id: "advanced", num: "04", group: { zh: "进阶", en: "Advanced" },
+      title: { zh: "现代策略优化", en: "Modern Policy Optimization" },
+      subtitle: { zh: "敬请期待", en: "Coming soon" },
+      status: "soon",
       cards: [
-        { thumb: "PPO",  title: "PPO · 近端策略优化",   kind: "RESEARCH", desc: "用裁剪过的目标函数稳定策略更新——现代 RL 最常用的基线方法之一。", status: "soon" },
-        { thumb: "GRPO", title: "GRPO · 组相对策略优化", kind: "RESEARCH", desc: "以组内相对优势替代价值网络，近来在大模型对齐中被广泛使用。", status: "soon" },
-        { thumb: "DPO",  title: "DPO · 直接偏好优化",   kind: "RESEARCH", desc: "跳过显式奖励模型，直接从偏好数据优化策略。", status: "soon" }
+        { title: { zh: "PPO", en: "PPO" },
+          desc: { zh: "近端策略优化——用裁剪目标稳住更新步长，现代深度 RL 的主力算法之一。",
+                  en: "Proximal Policy Optimization — a clipped objective keeps update steps stable; a workhorse of modern deep RL." }, status: "soon" },
+        { title: { zh: "GRPO", en: "GRPO" },
+          desc: { zh: "组相对策略优化——以组内相对奖励替代价值基线，近年大模型对齐中的热门方法。",
+                  en: "Group Relative Policy Optimization — replaces the value baseline with in-group relative rewards; popular in recent LLM alignment." }, status: "soon" },
+        { title: { zh: "DPO", en: "DPO" },
+          desc: { zh: "直接偏好优化——绕过显式奖励模型，直接从偏好数据优化策略。",
+                  en: "Direct Preference Optimization — skips the explicit reward model and optimizes the policy straight from preference data." }, status: "soon" }
       ]
     },
     {
-      id: "notes",
-      no: "05",
-      kind: "NOTES",
-      title: "笔记 · PDF 讲解",
-      subtitle: "整体设计与原理的文字讲解。",
+      id: "references", num: "05", group: { zh: "参考", en: "References" },
+      title: { zh: "参考文献", en: "References" },
+      subtitle: { zh: "本项目引用的书、论文与代码仓库",
+                  en: "Books, papers and repositories this project builds on" },
+      status: "open",
+      unit: { zh: "条参考", en: "references" },
       cards: [
-        {
-          thumb: "PDF",
-          title: "RLStudio 设计与原理讲解",
-          kind: "NOTES",
-          desc: "整体架构、可视化思路与各章算法笔记，配图与推导——把项目背后的设计想法讲清楚。",
-          pdf: "notes/RLStudio-notes.pdf",
-          status: "pdf"
-        }
+        { status: "ref", refType: "book",
+          title: "Mathematical Foundations of Reinforcement Learning",
+          cite: "S. Zhao · Springer Press · 2025",
+          bibtex:
+`@book{zhao2025RLBook,
+  title={Mathematical Foundations of Reinforcement Learning},
+  author={S. Zhao},
+  year={2025},
+  publisher={Springer Press}
+}` }
+      ]
+    },
+    {
+      id: "notes", num: "06", group: { zh: "笔记", en: "Notes" },
+      title: { zh: "PDF 讲解", en: "PDF Notes" },
+      subtitle: { zh: "整体设计与原理的文字讲解", en: "Written notes on the design and theory" },
+      status: "open",
+      cards: [
+        { icon: "PDF", title: { zh: "RLStudio 设计与原理讲解", en: "RLStudio: Design & Theory Notes" },
+          desc: { zh: "整体架构、可视化思路与每章算法的文字笔记，适合配合 notebook 一起阅读。",
+                  en: "Notes on the overall architecture, visualization approach and each chapter's algorithm — best read alongside the notebooks." },
+          pdf: "notes/RLStudio-notes.pdf", status: "pdf" }
       ]
     }
   ];
@@ -374,9 +463,11 @@
   <div class="wrap">
     <a class="brand" href="#/"><span class="glyph"></span><b>RLStudio</b></a>
     <nav class="nav-links">
-      <a href="#/" class="hide-sm">首页</a>
-      <a href="#about" class="hide-sm">关于</a>
-      <a href="#pick" class="hide-sm">章节</a>
+      <a href="#/" class="hide-sm" id="navHome">首页</a>
+      <a href="#/section/basics" class="hide-sm" id="navBasics">基础</a>
+      <a href="#/section/examples" class="hide-sm" id="navExamples">复现</a>
+      <a href="#/section/lab" class="hide-sm" id="navLab">实验场</a>
+      <button class="langbtn" id="langToggle" type="button">EN</button>
       <a class="ghbtn" href="https://github.com/rickliang-JY/RLStudio" target="_blank" rel="noopener">
         <svg width="15" height="15" viewBox="0 0 16 16" fill="currentColor" aria-hidden="true"><path d="M8 0C3.58 0 0 3.58 0 8c0 3.54 2.29 6.53 5.47 7.59.4.07.55-.17.55-.38 0-.19-.01-.82-.01-1.49-2.01.37-2.53-.49-2.69-.94-.09-.23-.48-.94-.82-1.13-.28-.15-.68-.52-.01-.53.63-.01 1.08.58 1.23.82.72 1.21 1.87.87 2.33.66.07-.52.28-.87.51-1.07-1.78-.2-3.64-.89-3.64-3.95 0-.87.31-1.59.82-2.15-.08-.2-.36-1.02.08-2.12 0 0 .67-.21 2.2.82.64-.18 1.32-.27 2-.27.68 0 1.36.09 2 .27 1.53-1.04 2.2-.82 2.2-.82.44 1.1.16 1.92.08 2.12.51.56.82 1.27.82 2.15 0 3.07-1.87 3.75-3.65 3.95.29.25.54.73.54 1.48 0 1.07-.01 1.93-.01 2.2 0 .21.15.46.55.38A8.01 8.01 0 0016 8c0-4.42-3.58-8-8-8z"/></svg>
         GitHub
@@ -385,362 +476,506 @@
   </div>
 </header>
 
-<div id="app"></div>
+<!-- ===================== 首页视图 ===================== -->
+<div id="view-home">
+  <section class="hero">
+    <canvas id="grid-canvas"></canvas>
+    <div class="wrap">
+      <span class="eyebrow"><span class="dot"></span><span id="heroEyebrow">开源 · 交互式学习材料</span></span>
+      <h1 id="heroTitle">从 0 到<span class="accent">强化学习</span></h1>
+      <p class="lede" id="heroLede">
+        每个算法都配同一个 grid world 例子并做了可视化。在浏览器里直接运行 notebook、
+        拖滑块看效果——把课本里的公式，变成你能上手调的东西。
+      </p>
+      <div class="cta-row">
+        <a class="btn btn-primary" id="demoBtn" href="#"><span class="play">▶</span><span id="demoBtnText">看一个实时嵌入示例</span></a>
+        <a class="btn btn-ghost" href="#chapters" id="browseBtn">浏览全部章节</a>
+      </div>
+    </div>
+    <a class="scroll-cue" href="#intro"><span class="mouse"></span><span id="scrollCue">向下了解</span></a>
+  </section>
+
+  <section class="intro wrap" id="intro">
+    <p class="lead" id="introLead">这不是又一份讲义。<br><span class="soft">它是一套你能动手调的强化学习。</span></p>
+    <div class="feat-grid">
+      <div class="feat">
+        <div class="ico">▦</div>
+        <h4 id="feat1h">同一个网格世界</h4>
+        <p id="feat1p">从基本概念到 Actor-Critic，所有算法都跑在同一个 grid world 上，方便横向对比、看清差异。</p>
+      </div>
+      <div class="feat">
+        <div class="ico">▶</div>
+        <h4 id="feat2h">浏览器里直接跑</h4>
+        <p id="feat2p">每章配一个可交互 notebook，无需本地环境，点开就能运行、改参数、重算。</p>
+      </div>
+      <div class="feat">
+        <div class="ico">◎</div>
+        <h4 id="feat3h">看得见的收敛</h4>
+        <p id="feat3p">策略、值函数、轨迹都做了可视化，拖动滑块就能看到算法一步步收敛的过程。</p>
+      </div>
+      <div class="feat">
+        <div class="ico">≈</div>
+        <h4 id="feat4h">从数学到代码</h4>
+        <p id="feat4p">跟随赵世钰《数学原理》逐章实现，公式旁边就是能跑的实现，理论与代码一一对应。</p>
+      </div>
+    </div>
+  </section>
+
+  <section class="chapters wrap" id="chapters">
+    <div class="sec-head">
+      <div class="kicker" id="chaptersKicker">选择一个分区</div>
+      <h2 id="chaptersH2">从这里开始</h2>
+    </div>
+    <div class="sec-grid" id="sec-grid"></div>
+  </section>
+</div>
+
+<!-- ===================== 章节子页视图 ===================== -->
+<div id="view-detail" class="hidden">
+  <main class="detail wrap" id="detail-body"></main>
+</div>
 
 <footer>
   <div class="wrap">
-    <span>RLStudio · 从 0 到强化学习 · 开源学习项目</span>
-    <span>基于赵世钰《Mathematical Foundation of Reinforcement Learning》</span>
+    <span id="footL">RLStudio · 从 0 到强化学习 · 开源学习项目</span>
+    <span id="footR">基于赵世钰《Mathematical Foundations of Reinforcement Learning》</span>
   </div>
 </footer>
 
 <script>
   const enc = encodeURIComponent;
-  const esc = s => String(s).replace(/[&<>"]/g, c => ({ "&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;" }[c]));
-  const nbHref = c => `notebook.html?file=${enc(c.nb)}&title=${enc(c.title)}${c.torch ? "&torch=1" : ""}`;
-  const app = document.getElementById("app");
 
-  /* ---------------- 首页 ---------------- */
-  function homeHTML() {
-    const chCards = SECTIONS.map(s => {
-      const soon = s.id === "advanced";
-      const count = s.cards.length;
-      const inner = `
-        <div class="ch-top">
-          <span class="ch-no">${s.no}</span>
-          ${soon ? `<span class="pill">即将推出</span>` : `<span class="ch-count">${count} 个内容</span>`}
-        </div>
-        <h3>${esc(s.title)}</h3>
-        <p>${esc(s.subtitle)}</p>
-        <span class="go">进入章节 →</span>`;
-      return `<a class="ch-card${soon ? " is-soon" : ""}" href="#/s/${s.id}">${inner}</a>`;
-    }).join("");
+  /* ---------- i18n ---------- */
+  let LANG = localStorage.getItem("rlstudio-lang") || "zh";
+  // 取本地化字符串：{zh,en} 取当前语言，普通字符串原样返回
+  const t = v => (v && typeof v === "object" && ("zh" in v || "en" in v)) ? (v[LANG] ?? v.zh) : v;
 
-    return `
-    <div class="view">
-      <section class="hero">
-        <div class="wrap">
-          <div>
-            <span class="eyebrow"><span class="dot"></span>开源 · 交互式学习材料</span>
-            <h1>从 0 到<br><span class="accent">强化学习</span></h1>
-            <p class="lede">每个 RL 算法都配同一个网格世界例子并做了可视化。在浏览器里直接运行 notebook、拖滑块看效果——把课本里的公式，变成你能上手调的东西。</p>
-            <div class="cta-row">
-              <a class="btn btn-primary" href="notebook.html?demo=1"><span class="play">▶</span>看一个实时嵌入示例</a>
-              <a class="btn btn-ghost" href="#pick">选择章节</a>
-            </div>
-          </div>
-          <div class="sim-panel">
-            <div class="sim-head">
-              <span>GRID WORLD · 价值迭代</span>
-              <span class="live"><i></i>LIVE</span>
-            </div>
-            <canvas id="sim" width="520" height="380"></canvas>
-          </div>
-        </div>
-      </section>
+  // 首页/页脚等静态文本（含少量内联标签，用 innerHTML）
+  const UI = {
+    navHome:     { zh: "首页", en: "Home" },
+    navBasics:   { zh: "基础", en: "Foundations" },
+    navExamples: { zh: "复现", en: "Reproductions" },
+    navLab:      { zh: "实验场", en: "Playground" },
+    heroEyebrow: { zh: "开源 · 交互式学习材料", en: "Open source · interactive learning" },
+    heroTitle:   { zh: '从 0 到<span class="accent">强化学习</span>', en: 'From Zero to <span class="accent">Reinforcement Learning</span>' },
+    heroLede:    { zh: "每个算法都配同一个 grid world 例子并做了可视化。在浏览器里直接运行 notebook、拖滑块看效果——把课本里的公式，变成你能上手调的东西。",
+                   en: "Every algorithm comes with the same grid-world example, fully visualized. Run the notebooks right in your browser and drag the sliders — turning textbook formulas into something you can tweak by hand." },
+    demoBtnText: { zh: "看一个实时嵌入示例", en: "See a live embedded demo" },
+    browseBtn:   { zh: "浏览全部章节", en: "Browse all chapters" },
+    scrollCue:   { zh: "向下了解", en: "Scroll to explore" },
+    introLead:   { zh: '这不是又一份讲义。<br><span class="soft">它是一套你能动手调的强化学习。</span>',
+                   en: 'Not another lecture note.<br><span class="soft">It&#39;s reinforcement learning you can tweak by hand.</span>' },
+    feat1h: { zh: "同一个网格世界", en: "One grid world" },
+    feat1p: { zh: "从基本概念到 Actor-Critic，所有算法都跑在同一个 grid world 上，方便横向对比、看清差异。",
+              en: "From basic concepts to Actor-Critic, every algorithm runs on the same grid world — easy to compare side by side and see the differences." },
+    feat2h: { zh: "浏览器里直接跑", en: "Runs in the browser" },
+    feat2p: { zh: "每章配一个可交互 notebook，无需本地环境，点开就能运行、改参数、重算。",
+              en: "Each chapter ships an interactive notebook — no local setup; open it to run, change parameters and recompute." },
+    feat3h: { zh: "看得见的收敛", en: "Convergence you can see" },
+    feat3p: { zh: "策略、值函数、轨迹都做了可视化，拖动滑块就能看到算法一步步收敛的过程。",
+              en: "Policies, value functions and trajectories are all visualized — drag a slider and watch the algorithm converge step by step." },
+    feat4h: { zh: "从数学到代码", en: "From math to code" },
+    feat4p: { zh: "跟随赵世钰《数学原理》逐章实现，公式旁边就是能跑的实现，理论与代码一一对应。",
+              en: "Implemented chapter by chapter following Zhao's book — runnable code right next to the formulas, theory mapped one-to-one to code." },
+    chaptersKicker: { zh: "选择一个分区", en: "Pick a section" },
+    chaptersH2:     { zh: "从这里开始", en: "Start here" },
+    footL: { zh: "RLStudio · 从 0 到强化学习 · 开源学习项目", en: "RLStudio · From Zero to RL · open-source learning project" },
+    footR: { zh: "基于赵世钰《Mathematical Foundations of Reinforcement Learning》",
+             en: 'Based on S. Zhao, "Mathematical Foundations of Reinforcement Learning"' }
+  };
 
-      <section class="intro" id="about">
-        <div class="wrap">
-          <div class="section-kicker">关于项目</div>
-          <h2>一套能跑、能调、能看见的强化学习教材</h2>
-          <p class="intro-lede">RLStudio 把强化学习从黑板搬进浏览器。所有算法共用同一个网格世界，因此你能横向比较它们的行为；每一章都是一个可运行的 notebook，公式旁边就是能拖动的滑块和实时刷新的可视化。</p>
-          <div class="feat-grid">
-            <div class="feat">
-              <div class="ic">▦</div>
-              <h4>统一的网格世界</h4>
-              <p>从动态规划到 Actor-Critic，所有算法在同一张地图上对照，差异一目了然。</p>
-            </div>
-            <div class="feat">
-              <div class="ic">▶</div>
-              <h4>浏览器里直接跑</h4>
-              <p>无需本地环境，点开即用。拖滑块改参数，价值场与策略实时重算。</p>
-            </div>
-            <div class="feat">
-              <div class="ic">∑</div>
-              <h4>对照课本逐章实现</h4>
-              <p>紧扣赵世钰的数学教材，每个公式都能找到对应的、可读的代码实现。</p>
-            </div>
-          </div>
-        </div>
-      </section>
+  // 渲染时用到的零散标签
+  const L = {
+    unitDefault: { zh: "个小节", en: "lessons" },
+    soonBadge:   { zh: "即将推出", en: "Coming soon" },
+    preview:     { zh: "预览", en: "Preview" },
+    enter:       { zh: "进入", en: "Enter" },
+    soonMeta:    { zh: "敬请期待", en: "Coming soon" },
+    pdfMeta:     { zh: "📄 PDF 文档", en: "📄 PDF document" },
+    free:        { zh: "自由时长", en: "Flexible" },
+    min:         { zh: "分钟", en: "min" },
+    back:        { zh: "← 返回分区", en: "← Back to sections" },
+    copyBib:     { zh: "复制 BibTeX", en: "Copy BibTeX" },
+    copied:      { zh: "已复制 ✓", en: "Copied ✓" },
+    openLink:    { zh: "打开链接 ↗", en: "Open link ↗" },
+    refType: {
+      book: { zh: "书籍", en: "Book" },
+      repo: { zh: "代码仓库", en: "Repository" },
+      paper: { zh: "论文", en: "Paper" }
+    }
+  };
 
-      <section class="chapters" id="pick">
-        <div class="wrap">
-          <div class="head">
-            <div class="section-kicker">选择章节</div>
-            <h2>从哪里开始？</h2>
-          </div>
-          <div class="ch-grid">${chCards}</div>
-        </div>
-      </section>
-    </div>`;
+  function applyUI() {
+    for (const id in UI) {
+      const el = document.getElementById(id);
+      if (el) el.innerHTML = t(UI[id]);
+    }
+    document.documentElement.lang = LANG === "zh" ? "zh-CN" : "en";
+    const tog = document.getElementById("langToggle");
+    if (tog) tog.textContent = LANG === "zh" ? "EN" : "中";
   }
 
-  /* ---------------- 章节子页 ---------------- */
-  function rowHTML(c) {
-    const soon = c.status === "soon";
-    const pdf  = c.status === "pdf";
-    const href = soon ? null : (pdf ? c.pdf : nbHref(c));
-    const tag  = c.tags && c.tags.length ? c.tags.map(t => `<span class="tag">${esc(t)}</span>`).join("") : "";
-    const readTxt = soon ? "即将推出" : (pdf ? "下载 PDF" : "阅读");
-    const inner = `
-      <div class="thumb"><span>${esc(c.thumb)}</span></div>
-      <div class="body">
-        <div class="meta"><span>${esc(c.kind)}</span>${tag}</div>
-        <h3>${esc(c.title)}</h3>
-        <p class="desc">${esc(c.desc)}</p>
-        <span class="read">${readTxt} <span class="ar">↗</span></span>
-      </div>`;
-    if (soon) return `<div class="row is-soon">${inner}</div>`;
-    const extra = pdf ? ` target="_blank" rel="noopener"` : "";
-    return `<a class="row" href="${href}"${extra}>${inner}</a>`;
+  function setLang(lang) {
+    LANG = lang;
+    localStorage.setItem("rlstudio-lang", lang);
+    applyUI();
+    renderHome();
+    route();
   }
 
-  function sectionHTML(s) {
-    return `
-    <div class="view detail">
-      <div class="wrap">
-        <a class="back" href="#/">← 返回 RLStudio</a>
-        <div class="detail-head">
-          <div class="section-kicker">${s.no} · ${esc(s.kind)}</div>
-          <h1>${esc(s.title)}</h1>
-          <p>${esc(s.subtitle)}</p>
-        </div>
-        <div class="rows">${s.cards.map(rowHTML).join("")}</div>
-      </div>
-    </div>`;
+  const nbHref = (card, secId) =>
+    `notebook.html?file=${enc(card.nb)}&title=${enc(t(card.title))}` +
+    (card.torch ? "&torch=1" : "") +
+    (secId ? `&from=${enc(secId)}` : "");
+
+  /* ---------- 程序生成的迷你 grid world 缩略图（占位，可后替换为真实图） ---------- */
+  function miniGrid(seed) {
+    // 确定性伪随机
+    let s = (seed * 2654435761) >>> 0;
+    const rnd = () => { s ^= s << 13; s ^= s >>> 17; s ^= s << 5; s >>>= 0; return s / 4294967296; };
+    const N = 5, cell = 100 / N, pad = 0.6;
+    let svg = `<svg viewBox="0 0 100 67" xmlns="http://www.w3.org/2000/svg" preserveAspectRatio="xMidYMid slice">`;
+    svg += `<rect width="100" height="67" fill="var(--accent-soft)"/>`;
+    const oy = (67 - (cell * N) * 0.62) / 2, scale = 0.62, gx = (100 - cell*N*scale)/2;
+    const X = c => gx + c * cell * scale, Y = r => oy + r * cell * scale, CS = cell * scale - pad*2;
+    // 网格线
+    for (let i = 0; i <= N; i++) {
+      svg += `<line x1="${X(i)}" y1="${Y(0)}" x2="${X(i)}" y2="${Y(N)}" stroke="#fff" stroke-width="0.7"/>`;
+      svg += `<line x1="${X(0)}" y1="${Y(i)}" x2="${X(N)}" y2="${Y(i)}" stroke="#fff" stroke-width="0.7"/>`;
+    }
+    // 障碍
+    const obst = new Set();
+    const nObs = 2 + Math.floor(rnd() * 3);
+    for (let k = 0; k < nObs; k++) { obst.add(Math.floor(rnd()*N) * N + Math.floor(rnd()*N)); }
+    obst.forEach(idx => {
+      const r = Math.floor(idx / N), c = idx % N;
+      svg += `<rect x="${X(c)+pad}" y="${Y(r)+pad}" width="${CS}" height="${CS}" rx="1.4" fill="#cdd6e8"/>`;
+    });
+    // 目标（右下区域）
+    const gr = N-1, gc = N-1;
+    svg += `<rect x="${X(gc)+pad}" y="${Y(gr)+pad}" width="${CS}" height="${CS}" rx="1.4" fill="none" stroke="var(--accent)" stroke-width="1.4"/>`;
+    svg += `<rect x="${X(gc)+CS*0.32+pad}" y="${Y(gr)+CS*0.32+pad}" width="${CS*0.36}" height="${CS*0.36}" rx="1" fill="var(--accent)"/>`;
+    // agent（左上 + 一段轨迹）
+    let ar = Math.floor(rnd()*2), ac = Math.floor(rnd()*2);
+    let r = ar, c = ac;
+    for (let step = 0; step < 4; step++) {
+      const cx = X(c) + cell*scale/2, cy = Y(r) + cell*scale/2;
+      svg += `<circle cx="${cx}" cy="${cy}" r="0.9" fill="var(--accent)" opacity="${0.25 + step*0.12}"/>`;
+      if (r < gr && (c >= gc || rnd() > 0.5)) r++; else if (c < gc) c++;
+    }
+    svg += `<rect x="${X(ac)+pad}" y="${Y(ar)+pad}" width="${CS}" height="${CS}" rx="1.4" fill="var(--accent)"/>`;
+    svg += `</svg>`;
+    return svg;
   }
 
-  /* ---------------- 路由 ---------------- */
-  let rafId = null;
-  function stopSim() { if (rafId) { cancelAnimationFrame(rafId); rafId = null; } }
+  /* ---------- 首页：渲染分区卡片 ---------- */
+  function renderHome() {
+    const grid = document.getElementById("sec-grid");
+    grid.innerHTML = "";
+    SECTIONS.forEach(sec => {
+      const soon = sec.status === "soon";
+      const a = document.createElement("a");
+      a.className = "sec-card" + (soon ? " is-soon" : "");
+      a.href = `#/section/${sec.id}`;
+      const n = sec.cards.length;
+      const unit = t(sec.unit || L.unitDefault);
+      a.innerHTML =
+        (soon ? `<span class="badge-soon">${t(L.soonBadge)}</span>` : "") +
+        `<div class="idx">${sec.num} · ${t(sec.group)}</div>` +
+        `<h3>${t(sec.title)}</h3>` +
+        `<p>${t(sec.subtitle)}</p>` +
+        `<div class="foot"><span class="count">${n} ${unit}</span>` +
+        `<span class="go">${soon ? t(L.preview) : t(L.enter)} →</span></div>`;
+      grid.appendChild(a);
+    });
+    document.getElementById("demoBtn").href = "notebook.html?demo=1";
+  }
 
-  function render() {
-    stopSim();
-    const hash = location.hash || "#/";
-    const m = hash.match(/^#\/s\/(.+)$/);
+  const escHtml = s => String(s).replace(/[&<>]/g, c => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;" }[c]));
+
+  /* ---------- 子页：参考文献条目 ---------- */
+  function referenceRow(card) {
+    const el = document.createElement("div");
+    el.className = "refitem";
+    const typeLabel = t(L.refType[card.refType] || L.refType.book);
+    const linkHtml = card.url
+      ? `<a class="ref-link" href="${card.url}" target="_blank" rel="noopener">${t(L.openLink)}</a>` : "";
+    const bibHtml = card.bibtex
+      ? `<div class="ref-bibwrap">` +
+          `<button class="ref-copy" type="button">${t(L.copyBib)}</button>` +
+          `<pre class="ref-bib"><code>${escHtml(card.bibtex)}</code></pre>` +
+        `</div>` : "";
+    el.innerHTML =
+      `<div class="ref-top"><span class="ref-type">${typeLabel}</span><h3>${escHtml(t(card.title))}</h3></div>` +
+      (card.cite ? `<p class="ref-cite">${escHtml(card.cite)}</p>` : "") +
+      bibHtml + linkHtml;
+
+    const btn = el.querySelector(".ref-copy");
+    if (btn) {
+      btn.addEventListener("click", async () => {
+        try { await navigator.clipboard.writeText(card.bibtex); }
+        catch (_) {
+          const ta = document.createElement("textarea");
+          ta.value = card.bibtex; document.body.appendChild(ta); ta.select();
+          document.execCommand("copy"); ta.remove();
+        }
+        btn.textContent = t(L.copied); btn.classList.add("done");
+        setTimeout(() => { btn.textContent = t(L.copyBib); btn.classList.remove("done"); }, 1600);
+      });
+    }
+    return el;
+  }
+
+  /* ---------- 子页：渲染某分区的小节列表 ---------- */
+  function lessonRow(card, seed, secId) {
+    if (card.status === "ref") return referenceRow(card);
+    const isSoon = card.status === "soon";
+    const isPdf  = card.status === "pdf";
+    const el = document.createElement(isSoon ? "div" : "a");
+    el.className = "lesson" + (isSoon ? " soon" : "");
+    if (!isSoon) { el.href = isPdf ? card.pdf : nbHref(card, secId); if (isPdf) el.target = "_blank"; el.rel = "noopener"; }
+
+    const thumb = document.createElement("div");
+    thumb.className = "thumb";
+    thumb.innerHTML = card.icon === "PDF"
+      ? `<svg viewBox="0 0 100 67" preserveAspectRatio="xMidYMid slice"><rect width="100" height="67" fill="#fdecec"/><text x="50" y="40" text-anchor="middle" font-family="monospace" font-size="15" font-weight="700" fill="#d3473f">PDF</text></svg>`
+      : miniGrid(seed);
+
+    const body = document.createElement("div");
+    body.className = "body";
+    const numHtml = card.n != null ? `<span class="lnum">${pad2(card.n)}</span>` : "";
+    let metaItems = "";
+    if (isSoon) {
+      metaItems = `<span class="m">${t(L.soonMeta)}</span>`;
+    } else if (isPdf) {
+      metaItems = `<span class="m">${t(L.pdfMeta)}</span>`;
+    } else {
+      const timeTxt = card.time ? `${card.time} ${t(L.min)}` : t(L.free);
+      metaItems =
+        `<span class="m">⏱ ${timeTxt}</span>` +
+        (card.level ? `<span class="m">◆ ${t(card.level)}</span>` : "") +
+        (card.torch ? `<span class="m torch">PyTorch</span>` : "");
+    }
+    body.innerHTML =
+      `<div class="ltop">${numHtml}<h3>${t(card.title)}</h3></div>` +
+      `<div class="meta">${metaItems}</div>` +
+      `<p class="desc">${t(card.desc)}</p>`;
+
+    el.appendChild(thumb);
+    el.appendChild(body);
+    if (!isSoon) {
+      const chev = document.createElement("div");
+      chev.className = "chev"; chev.textContent = "→";
+      el.appendChild(chev);
+    }
+    return el;
+  }
+
+  function renderDetail(sec) {
+    const body = document.getElementById("detail-body");
+    body.innerHTML =
+      `<a class="back" href="#chapters">${t(L.back)}</a>` +
+      `<div class="detail-head">` +
+        `<div class="kicker">${sec.num} · ${t(sec.group)}</div>` +
+        `<h1>${t(sec.title)}</h1>` +
+        `<p>${t(sec.subtitle)}</p>` +
+      `</div>`;
+    const list = document.createElement("div");
+    list.className = "lessons";
+    sec.cards.forEach((c, i) => list.appendChild(lessonRow(c, (sec.id.charCodeAt(0) * 31 + i * 7 + 3), sec.id)));
+    body.appendChild(list);
+  }
+
+  /* ---------- 路由 ---------- */
+  const viewHome = document.getElementById("view-home");
+  const viewDetail = document.getElementById("view-detail");
+
+  function route() {
+    const h = location.hash || "#/";
+    const m = h.match(/^#\/section\/([\w-]+)/);
     if (m) {
       const sec = SECTIONS.find(s => s.id === m[1]);
-      if (sec) { app.innerHTML = sectionHTML(sec); window.scrollTo(0, 0); return; }
+      if (sec) {
+        renderDetail(sec);
+        viewHome.classList.add("hidden");
+        viewDetail.classList.remove("hidden");
+        stopHero();
+        window.scrollTo(0, 0);
+        return;
+      }
     }
-    app.innerHTML = homeHTML();
-    initSim(document.getElementById("sim"));
-    // 支持从 header 锚点进入子区块
-    if (hash === "#about" || hash === "#pick") {
-      const t = document.querySelector(hash);
-      if (t) t.scrollIntoView ? requestAnimationFrame(() => window.scrollTo(0, t.offsetTop - 70)) : null;
-    } else {
+    // 首页
+    viewDetail.classList.add("hidden");
+    viewHome.classList.remove("hidden");
+    startHero();
+    // 支持 #intro / #chapters 锚点
+    if (h === "#intro" || h === "#chapters") {
+      const t = document.getElementById(h.slice(1));
+      if (t) t.scrollIntoView({ behavior: "smooth" });
+    } else if (h === "#/" || h === "" || h === "#") {
       window.scrollTo(0, 0);
     }
   }
-  window.addEventListener("hashchange", render);
+  window.addEventListener("hashchange", route);
 
   /* ============================================================
-     网格世界价值迭代动画
+     Hero Canvas 动画：agent 在 grid world 里 BFS 寻路到目标，循环
      ============================================================ */
-  function initSim(canvas) {
-    if (!canvas) return;
-    const reduce = window.matchMedia && window.matchMedia("(prefers-reduced-motion: reduce)").matches;
-    const COLS = 7, ROWS = 5;
-    const GOAL = { c: COLS - 1, r: 0 };
-    const WALLS = new Set(["2,1","2,2","2,3","4,2","4,3","5,3"]);
-    const GAMMA = 0.9;
-    const key = (c, r) => c + "," + r;
-    const inb = (c, r) => c >= 0 && c < COLS && r >= 0 && r < ROWS;
-    const isWall = (c, r) => WALLS.has(key(c, r));
-
-    // BFS 距离 -> 价值
-    const dist = {}; const q = [GOAL]; dist[key(GOAL.c, GOAL.r)] = 0;
-    const dirs = [[1,0],[-1,0],[0,1],[0,-1]];
-    while (q.length) {
-      const cur = q.shift();
-      for (const [dc, dr] of dirs) {
-        const nc = cur.c + dc, nr = cur.r + dr;
-        if (!inb(nc, nr) || isWall(nc, nr)) continue;
-        const k = key(nc, nr);
-        if (dist[k] === undefined) { dist[k] = dist[key(cur.c, cur.r)] + 1; q.push({ c: nc, r: nr }); }
-      }
-    }
-    const value = (c, r) => { const d = dist[key(c, r)]; return d === undefined ? 0 : Math.pow(GAMMA, d); };
-    const policy = (c, r) => {
-      let best = null, bd = Infinity;
-      for (const [dc, dr] of dirs) {
-        const nc = c + dc, nr = r + dr; const k = key(nc, nr);
-        if (!inb(nc, nr) || isWall(nc, nr) || dist[k] === undefined) continue;
-        if (dist[k] < bd) { bd = dist[k]; best = { c: nc, r: nr }; }
-      }
-      return best;
-    };
-    const starts = [];
-    for (let c = 0; c < COLS; c++) for (let r = 0; r < ROWS; r++)
-      if (!isWall(c, r) && dist[key(c, r)] !== undefined && dist[key(c, r)] >= 4) starts.push({ c, r });
-
+  const heroAnim = (() => {
+    const canvas = document.getElementById("grid-canvas");
     const ctx = canvas.getContext("2d");
-    const cssVar = n => getComputedStyle(document.documentElement).getPropertyValue(n).trim();
-    const ACC = cssVar("--accent") || "#2b6cf0";
-    const ACCD = cssVar("--accent-deep") || "#1a4fd0";
+    let W = 0, H = 0, dpr = 1, cell = 56, cols = 0, rows = 0;
+    let grid, path = [], pathIdx = 0, t = 0, agent = null, goal = null, phase = "move", phaseT = 0;
+    let raf = null, running = false;
 
-    let W, H, cell, padX, padY, dpr;
+    const C = {
+      line:  "#e9e9ee",
+      obst:  "#e3e6ee",
+      trail: "rgba(43,108,240,0.10)",
+      agent: "#2b6cf0",
+      goalLine: "#2b6cf0"
+    };
+
     function resize() {
-      const rect = canvas.getBoundingClientRect();
-      const wCss = rect.width || 520;
-      const hCss = wCss * (ROWS / COLS) * 0.86 + 0;
       dpr = Math.min(window.devicePixelRatio || 1, 2);
-      canvas.width = Math.round(wCss * dpr);
-      canvas.height = Math.round(hCss * dpr);
-      canvas.style.height = hCss + "px";
-      W = wCss; H = hCss;
-      const gap = 6;
-      cell = Math.min((W - gap) / COLS, (H - gap) / ROWS);
-      padX = (W - cell * COLS) / 2;
-      padY = (H - cell * ROWS) / 2;
+      const rect = canvas.getBoundingClientRect();
+      W = rect.width; H = rect.height;
+      canvas.width = W * dpr; canvas.height = H * dpr;
       ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
-    }
-    resize();
-    const ro = new ResizeObserver(resize); ro.observe(canvas);
-
-    function lerp(a, b, t) { return a + (b - a) * t; }
-    function ease(t) { return t < .5 ? 2*t*t : 1 - Math.pow(-2*t+2, 2)/2; }
-    function cellXY(c, r) { return { x: padX + c * cell, y: padY + r * cell }; }
-
-    // 状态机
-    let agent = starts.length ? { ...starts[(Math.random()*starts.length)|0] } : { c: 0, r: ROWS-1 };
-    let target = policy(agent.c, agent.r) || agent;
-    let trail = [];
-    const STEP_MS = 520;
-    let t0 = performance.now();
-
-    function newRun() {
-      agent = starts.length ? { ...starts[(Math.random()*starts.length)|0] } : { c: 0, r: ROWS-1 };
-      target = policy(agent.c, agent.r) || agent;
-      trail = [];
+      cols = Math.ceil(W / cell) + 1;
+      rows = Math.ceil(H / cell) + 1;
+      newEpisode();
     }
 
-    function rr(x, y, w, h, rad) {
+    function key(r, c) { return r + "," + c; }
+    function bfs(start, end, blocked) {
+      const q = [start], prev = {}; prev[key(start.r, start.c)] = null;
+      const dirs = [[1,0],[-1,0],[0,1],[0,-1]];
+      while (q.length) {
+        const cur = q.shift();
+        if (cur.r === end.r && cur.c === end.c) {
+          const out = []; let k = key(cur.r, cur.c);
+          while (k !== null) { const [r,c] = k.split(",").map(Number); out.push({r,c}); k = prev[k]; }
+          return out.reverse();
+        }
+        for (const [dr,dc] of dirs) {
+          const nr = cur.r+dr, nc = cur.c+dc, kk = key(nr,nc);
+          if (nr<0||nc<0||nr>=rows||nc>=cols) continue;
+          if (blocked.has(kk) || kk in prev) continue;
+          prev[kk] = key(cur.r, cur.c); q.push({r:nr,c:nc});
+        }
+      }
+      return null;
+    }
+
+    function newEpisode() {
+      const blocked = new Set();
+      const density = 0.16;
+      for (let r=0;r<rows;r++) for (let c=0;c<cols;c++) if (Math.random()<density) blocked.add(key(r,c));
+      // start 左侧，goal 右侧
+      let start, end, p = null, tries = 0;
+      do {
+        start = { r: Math.floor(Math.random()*rows), c: Math.floor(Math.random()*Math.max(1,cols*0.3)) };
+        end   = { r: Math.floor(Math.random()*rows), c: cols-1-Math.floor(Math.random()*Math.max(1,cols*0.25)) };
+        blocked.delete(key(start.r,start.c)); blocked.delete(key(end.r,end.c));
+        p = bfs(start, end, blocked);
+        tries++;
+      } while (!p && tries < 40);
+      if (!p) { blocked.clear(); p = bfs(start, end, blocked); }
+      grid = { blocked }; agent = start; goal = end; path = p || [start]; pathIdx = 0; t = 0; phase = "move"; phaseT = 0;
+    }
+
+    function cellXY(r, c) { return { x: c*cell, y: r*cell }; }
+
+    function draw() {
+      ctx.clearRect(0,0,W,H);
+      // 网格线
+      ctx.strokeStyle = C.line; ctx.lineWidth = 1;
       ctx.beginPath();
-      ctx.moveTo(x+rad, y); ctx.arcTo(x+w, y, x+w, y+h, rad);
-      ctx.arcTo(x+w, y+h, x, y+h, rad); ctx.arcTo(x, y+h, x, y, rad);
-      ctx.arcTo(x, y, x+w, y, rad); ctx.closePath();
-    }
-
-    function drawGrid(now) {
-      ctx.clearRect(0, 0, W, H);
-      const m = 3, rad = Math.max(4, cell * 0.14);
-      for (let c = 0; c < COLS; c++) for (let r = 0; r < ROWS; r++) {
-        const { x, y } = cellXY(c, r);
-        const w = cell - m, h = cell - m;
-        if (isWall(c, r)) {
-          ctx.fillStyle = "#e7e7ec";
-          rr(x + m/2, y + m/2, w, h, rad); ctx.fill();
-          continue;
-        }
-        const v = value(c, r);
-        // 价值热力：白 -> 强调色
-        ctx.fillStyle = "#f7f8fb";
-        rr(x + m/2, y + m/2, w, h, rad); ctx.fill();
-        if (v > 0.001) {
-          ctx.globalAlpha = 0.10 + v * 0.62;
-          ctx.fillStyle = ACC;
-          rr(x + m/2, y + m/2, w, h, rad); ctx.fill();
-          ctx.globalAlpha = 1;
-        }
-        // 策略箭头
-        const p = policy(c, r);
-        if (p && !(c === GOAL.c && r === GOAL.r)) {
-          const cx = x + cell/2, cy = y + cell/2;
-          const dx = (p.c - c), dy = (p.r - r);
-          const len = cell * 0.20;
-          ctx.strokeStyle = v > 0.35 ? "rgba(255,255,255,.85)" : "rgba(43,108,240,.45)";
-          ctx.lineWidth = 1.6; ctx.lineCap = "round";
-          ctx.beginPath();
-          ctx.moveTo(cx - dx*len, cy - dy*len);
-          ctx.lineTo(cx + dx*len, cy + dy*len);
-          ctx.stroke();
-          // 箭头头
-          const hx = cx + dx*len, hy = cy + dy*len, a = cell*0.09;
-          ctx.beginPath();
-          ctx.moveTo(hx, hy);
-          ctx.lineTo(hx - dx*a - dy*a*0.7, hy - dy*a + dx*a*0.7);
-          ctx.moveTo(hx, hy);
-          ctx.lineTo(hx - dx*a + dy*a*0.7, hy - dy*a - dx*a*0.7);
-          ctx.stroke();
-        }
+      for (let c=0;c<=cols;c++){ ctx.moveTo(c*cell+.5,0); ctx.lineTo(c*cell+.5,H); }
+      for (let r=0;r<=rows;r++){ ctx.moveTo(0,r*cell+.5); ctx.lineTo(W,r*cell+.5); }
+      ctx.stroke();
+      // 障碍
+      ctx.fillStyle = C.obst;
+      grid.blocked.forEach(k => {
+        const [r,c] = k.split(",").map(Number);
+        const {x,y} = cellXY(r,c);
+        ctx.beginPath(); ctx.roundRect(x+8, y+8, cell-16, cell-16, 6); ctx.fill();
+      });
+      // 已走轨迹
+      ctx.fillStyle = C.trail;
+      for (let i=0;i<=Math.min(pathIdx, path.length-1); i++) {
+        const {x,y} = cellXY(path[i].r, path[i].c);
+        ctx.beginPath(); ctx.roundRect(x+7, y+7, cell-14, cell-14, 7); ctx.fill();
       }
       // 目标
-      const g = cellXY(GOAL.c, GOAL.r);
-      const pulse = 0.5 + 0.5 * Math.sin(now / 480);
-      ctx.fillStyle = ACCD;
-      rr(g.x + m/2, g.y + m/2, cell - m, cell - m, rad); ctx.fill();
-      ctx.fillStyle = "rgba(255,255,255,.92)";
-      ctx.font = `${cell*0.34}px var(--font), sans-serif`;
-      ctx.textAlign = "center"; ctx.textBaseline = "middle";
-      ctx.fillText("★", g.x + cell/2, g.y + cell/2 + cell*0.02);
-      ctx.globalAlpha = 0.22 + pulse * 0.18;
-      ctx.strokeStyle = ACCD; ctx.lineWidth = 2;
-      rr(g.x + m/2 - 2, g.y + m/2 - 2, cell - m + 4, cell - m + 4, rad + 2); ctx.stroke();
+      const g = cellXY(goal.r, goal.c);
+      ctx.strokeStyle = C.goalLine; ctx.lineWidth = 2;
+      ctx.beginPath(); ctx.roundRect(g.x+10, g.y+10, cell-20, cell-20, 6); ctx.stroke();
+      ctx.fillStyle = C.goalLine; ctx.globalAlpha = 0.18;
+      ctx.beginPath(); ctx.roundRect(g.x+10, g.y+10, cell-20, cell-20, 6); ctx.fill();
       ctx.globalAlpha = 1;
-    }
-
-    function drawAgent(ix, iy) {
-      // 轨迹
-      for (let i = 0; i < trail.length; i++) {
-        const tp = trail[i];
-        const { x, y } = cellXY(tp.c, tp.r);
-        ctx.globalAlpha = 0.07 + (i / trail.length) * 0.16;
-        ctx.fillStyle = ACC;
-        const s = cell * 0.30;
-        rr(x + cell/2 - s/2, y + cell/2 - s/2, s, s, s*0.3); ctx.fill();
-      }
-      ctx.globalAlpha = 1;
-      const s = cell * 0.46;
+      // agent（在相邻格之间插值）
+      let ar, ac;
+      if (pathIdx < path.length-1) {
+        const a = path[pathIdx], b = path[pathIdx+1];
+        const e = t<.5 ? 2*t*t : 1-Math.pow(-2*t+2,2)/2; // easeInOut
+        ar = a.r + (b.r-a.r)*e; ac = a.c + (b.c-a.c)*e;
+      } else { ar = path[path.length-1].r; ac = path[path.length-1].c; }
+      const ax = ac*cell, ay = ar*cell;
+      // 光晕
       ctx.save();
-      ctx.shadowColor = "rgba(26,79,208,.4)"; ctx.shadowBlur = 12; ctx.shadowOffsetY = 3;
-      ctx.fillStyle = ACCD;
-      rr(ix + cell/2 - s/2, iy + cell/2 - s/2, s, s, s*0.28); ctx.fill();
+      ctx.shadowColor = "rgba(43,108,240,0.45)"; ctx.shadowBlur = 16;
+      ctx.fillStyle = C.agent;
+      ctx.beginPath(); ctx.roundRect(ax+9, ay+9, cell-18, cell-18, 7); ctx.fill();
       ctx.restore();
-      ctx.fillStyle = "rgba(255,255,255,.92)";
-      const e = s * 0.16;
-      ctx.beginPath(); ctx.arc(ix + cell/2 - s*0.16, iy + cell/2 - s*0.04, e, 0, 7); ctx.fill();
-      ctx.beginPath(); ctx.arc(ix + cell/2 + s*0.16, iy + cell/2 - s*0.04, e, 0, 7); ctx.fill();
     }
 
-    function frame(now) {
-      let t = (now - t0) / STEP_MS;
-      if (t >= 1) {
-        // 落子到 target
-        trail.push({ c: agent.c, r: agent.r });
-        if (trail.length > 6) trail.shift();
-        agent = { ...target };
-        if (agent.c === GOAL.c && agent.r === GOAL.r) {
-          drawGrid(now);
-          const a = cellXY(agent.c, agent.r); drawAgent(a.x, a.y);
-          // 停一下再重开
-          t0 = now + 500;
-          setTimeout(() => { if (rafId !== null) { newRun(); t0 = performance.now(); } }, 520);
-          rafId = requestAnimationFrame(frame);
-          return;
+    function tick() {
+      if (!running) return;
+      if (phase === "move") {
+        t += 0.045;
+        if (t >= 1) {
+          t = 0; pathIdx++;
+          if (pathIdx >= path.length-1) { phase = "pause"; phaseT = 0; }
         }
-        target = policy(agent.c, agent.r) || agent;
-        t0 = now; t = 0;
+      } else {
+        phaseT += 1;
+        if (phaseT > 60) newEpisode();
       }
-      const te = ease(Math.max(0, t));
-      const a = cellXY(agent.c, agent.r), b = cellXY(target.c, target.r);
-      const ix = lerp(a.x, b.x, te), iy = lerp(a.y, b.y, te);
-      drawGrid(now);
-      drawAgent(ix, iy);
-      rafId = requestAnimationFrame(frame);
+      draw();
+      raf = requestAnimationFrame(tick);
     }
 
-    if (reduce) {
-      const a = cellXY(agent.c, agent.r);
-      drawGrid(performance.now()); drawAgent(a.x, a.y);
-    } else {
-      t0 = performance.now();
-      rafId = requestAnimationFrame(frame);
+    function start() {
+      if (running) return;
+      running = true;
+      if (!grid) resize();
+      draw();                       // 立即画一帧静态画面，不依赖 rAF
+      raf = requestAnimationFrame(tick);
     }
-  }
+    // 标签页重新可见时确保动画在跑
+    document.addEventListener("visibilitychange", () => {
+      if (!document.hidden && running && !raf) raf = requestAnimationFrame(tick);
+    });
+    function stop() { running = false; if (raf) cancelAnimationFrame(raf); raf = null; }
 
-  render();
+    window.addEventListener("resize", () => { if (running) resize(); });
+    return { start, stop, resize };
+  })();
+
+  function startHero() { heroAnim.resize && heroAnim.start(); }
+  function stopHero() { heroAnim.stop(); }
+
+  /* ---------- 语言切换 ---------- */
+  document.getElementById("langToggle").addEventListener("click", () => {
+    setLang(LANG === "zh" ? "en" : "zh");
+  });
+
+  /* ---------- 初始化 ---------- */
+  applyUI();
+  renderHome();
+  route();
 </script>
 
 </body>
