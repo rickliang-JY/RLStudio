@@ -15,18 +15,46 @@
 
 ## 阶段索引
 
-| Phase | 主题 | 框架 | 状态 |
+| Phase | 主题 | 脚本 | 状态 |
 |---|---|---|---|
-| [0](phase0_architecture/) | 看懂结构:ViT + connector + LLM | transformers / Mini-LLaVA | ⬜ 未开始 |
-| [1](phase1_sft/) | SFT 视觉指令微调(LoRA) | lmms-finetune → ms-swift | ⬜ |
-| [2](phase2_preference_data/) | 偏好数据(RLAIF-V) | RLAIF-V | ⬜ |
-| [3](phase3_dpo/) | DPO / ORPO / KTO ★JD 核心 | ms-swift | ⬜ |
-| [4](phase4_reward_model/) | 奖励模型 | ms-swift | ⬜ |
-| [5](phase5_online_rl/) | 在线 RL:PPO / GRPO | ms-swift / verl | ⬜ |
-| [6](phase6_eval/) | 评测(POPE/MMHal/MM-Vet…) | VLMEvalKit | ⬜ |
-| [7](phase7_quant_deploy/) | 量化(AWQ/GPTQ)+ vLLM 部署 | ms-swift + vLLM | ⬜ |
+| [0](phase0_architecture/) | 看懂结构:ViT + connector + LLM | `env/setup_autodl.sh` | 🚧 脚本就绪,待 AutoDL 验证 |
+| [1](phase1_sft/) | SFT 视觉指令微调(LoRA) | `phase1_sft/run_sft.sh` | 🚧 脚本就绪 |
+| [2](phase2_preference_data/) | 偏好数据(RLAIF-V) | `phase2_preference_data/run_prepare_data.sh` | 🚧 脚本就绪 |
+| [3](phase3_dpo/) | DPO / ORPO / KTO ★JD 核心 | `phase3_dpo/run_align.sh {dpo,orpo,kto}` | 🚧 脚本就绪 |
+| [4](phase4_reward_model/) | 奖励模型 | `phase4_reward_model/run_rm.sh` | 🚧 脚本就绪 |
+| [5](phase5_online_rl/) | 在线 RL:GRPO | `phase5_online_rl/run_grpo.sh` | 🚧 脚本就绪 |
+| [6](phase6_eval/) | 评测(POPE/MMBench/MM-Vet) | `phase6_eval/run_eval.sh` | 🚧 脚本就绪 |
+| [7](phase7_quant_deploy/) | 量化(AWQ/GPTQ)+ vLLM 部署 | `phase7_quant_deploy/run_quant_deploy.sh` | 🚧 脚本就绪 |
 
 > 8 个阶段是**渐进**的,每做完一个就多一项能写进简历的东西。即便只到 Phase 3,也已覆盖 JD 核心。
+> 脚本均按 ms-swift 文档化用法、针对单卡 5090 + Qwen2-VL-2B 写好默认参数;Phase 0 验证、确认 ms-swift 版本后,
+> 个别参数(数据集 id、显存档位)可能需微调。
+
+## 运行顺序(在 AutoDL 上)
+
+```bash
+# 0) 拉代码(数据盘)
+cd /root/autodl-tmp && git clone https://github.com/rickliang-JY/RLStudio.git || git -C RLStudio pull
+cd RLStudio/vlm_posttraining
+
+# 0) Phase 0:环境验证 + 推理 sanity(不装训练框架)
+bash env/setup_autodl.sh
+
+# 1) 装框架(SFT/DPO/RM 够用;Phase 5/6/7 再 `bash env/setup_swift.sh full`)
+bash env/setup_swift.sh
+
+# 2) 全流程
+bash phase1_sft/run_sft.sh                         # SFT → merge 出 qwen2vl2b-sft
+bash phase2_preference_data/run_prepare_data.sh    # 看偏好数据
+for t in dpo orpo kto; do bash phase3_dpo/run_align.sh $t; done
+bash phase4_reward_model/run_rm.sh
+bash env/setup_swift.sh full                        # 装 vllm + evalscope
+bash phase5_online_rl/run_grpo.sh
+bash phase6_eval/run_eval.sh                        # 横扫各 checkpoint
+bash phase7_quant_deploy/run_quant_deploy.sh quant  # 量化;再 deploy / bench
+```
+
+> 各阶段产物默认落在数据盘 `/root/autodl-tmp/vlm/`(adapter / merge 模型 / 日志 / 评测结果),路径与超参见 `env/common.sh`。
 
 ## 交付物
 

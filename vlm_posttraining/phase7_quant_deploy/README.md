@@ -1,6 +1,6 @@
 # Phase 7 — 量化与部署
 
-**状态:** ⬜ 未开始
+**状态:** 🚧 脚本就绪(`run_quant_deploy.sh {quant,deploy,bench}`),待运行
 
 ## 概念
 把模型压小(AWQ/GPTQ),再用 vLLM 高速部署,测压缩后掉多少点、快多少。

@@ -1,6 +1,6 @@
 # Phase 6 — 评测(把每一步的效果量化)
 
-**状态:** ⬜ 未开始
+**状态:** 🚧 脚本就绪(`run_eval.sh`),待运行
 
 ## 概念
 有了 base/SFT/DPO/GRPO 几个 checkpoint,客观比较:

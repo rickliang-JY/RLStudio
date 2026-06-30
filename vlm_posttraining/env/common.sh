@@ -1,0 +1,41 @@
+#!/usr/bin/env bash
+# 各阶段共享变量与工具,被各 run_*.sh `source`。
+# 约定:单卡 5090 + Qwen2-VL-2B,全程 LoRA,产物全放数据盘 /root/autodl-tmp。
+
+# --- 缓存 / 设备 ---
+export HF_HOME=${HF_HOME:-/root/autodl-tmp/hf_cache}
+export MODELSCOPE_CACHE=${MODELSCOPE_CACHE:-/root/autodl-tmp/modelscope_cache}
+export CUDA_VISIBLE_DEVICES=${CUDA_VISIBLE_DEVICES:-0}
+# ms-swift 默认从 ModelScope 拉模型/数据(国内更稳);设 USE_HF=1 改走 HuggingFace。
+export USE_HF=${USE_HF:-0}
+
+# --- 路径 ---
+export BASE_MODEL=${BASE_MODEL:-Qwen/Qwen2-VL-2B-Instruct}
+export WORK=${WORK:-/root/autodl-tmp/vlm}
+export CKPT_DIR=$WORK/ckpt        # LoRA 训练输出(adapter)
+export MODEL_DIR=$WORK/models     # merge 后的完整模型(供下游 / 评测 / 量化)
+export LOG_DIR=$WORK/logs
+mkdir -p "$CKPT_DIR" "$MODEL_DIR" "$LOG_DIR"
+
+# --- 训练通用超参(单卡省显存档)---
+export REPORT=${REPORT:-tensorboard}   # 想用 wandb:export REPORT=wandb 并先 `wandb login`
+export LORA_RANK=${LORA_RANK:-8}
+export LORA_ALPHA=${LORA_ALPHA:-32}
+export MAX_LEN=${MAX_LEN:-2048}
+export GA=${GA:-16}                    # 梯度累积,等效放大 batch
+
+# 取某 output_dir 下「最新」的 checkpoint-*(按修改时间)
+last_ckpt() {
+  find "$1" -maxdepth 3 -type d -name 'checkpoint-*' -printf '%T@\t%p\n' 2>/dev/null \
+    | sort -rn | head -1 | cut -f2-
+}
+
+# 把某个 LoRA checkpoint merge 成完整模型,输出到 $MODEL_DIR/<name>
+# 用法: merge_lora <checkpoint_dir> <out_name>
+merge_lora() {
+  local ckpt="$1" name="$2"
+  echo ">>> merge LoRA: $ckpt -> $MODEL_DIR/$name"
+  swift export --adapters "$ckpt" --merge_lora true --output_dir "$MODEL_DIR/$name"
+}
+
+echo "[common] BASE_MODEL=$BASE_MODEL  WORK=$WORK  GPU=$CUDA_VISIBLE_DEVICES  REPORT=$REPORT"

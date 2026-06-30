@@ -1,6 +1,6 @@
 # Phase 5 — 在线 RL(PPO / GRPO)★ JD 加分项
 
-**状态:** ⬜ 未开始
+**状态:** 🚧 脚本就绪(`run_grpo.sh`),待运行
 
 ## 概念
 模型生成回答 → RM 打分 → 更新模型。PPO 经典;GRPO 更省(去掉 value network)。这是「在线 RLHF」。
