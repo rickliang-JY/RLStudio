@@ -1,0 +1,32 @@
+# 模型权重与基座
+models/
+*.safetensors
+*.bin
+*.pt
+*.pth
+*.gguf
+
+# 训练产物
+checkpoints/
+outputs/
+output/
+runs/
+logs/
+*.log
+
+# 数据集(用脚本下载,不入库)
+data/
+datasets/
+
+# 实验追踪
+wandb/
+.wandb/
+
+# 缓存
+.cache/
+__pycache__/
+*.pyc
+.ipynb_checkpoints/
+
+# 评测结果(大文件,报告里引用即可)
+eval_results/
