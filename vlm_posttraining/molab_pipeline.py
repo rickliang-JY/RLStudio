@@ -4,11 +4,24 @@ __generated_with = "0.23.10"
 app = marimo.App(width="medium")
 
 
+@app.cell
+def _():
+    import marimo as mo
+    import os
+    import subprocess
+
+    return mo, os, subprocess
+
+
 @app.cell(hide_code=True)
 def _(mo):
     mo.md(
         r"""
         # VLM 后训练全流程 · molab 运行台
+
+        > ⚠️ **第一次打开:先点顶栏的「Run all ▶▶」把全部 cell 跑一遍**(或把 runtime 设成 autorun)。
+        > molab 默认惰性执行,不先跑一遍,下面按钮会因为基础 cell(定义路径/工具)没运行而报
+        > `NameError`。基础 cell 都很轻,按钮阶段有 `mo.stop` 拦着,不会误触发训练。
 
         在 **molab(RTX PRO 6000 / torch 2.12·cu130)** 上一键跑通 Qwen2-VL-2B 的后训练全生命周期:
         **SFT → 偏好对齐(DPO/ORPO/KTO)→ 奖励模型 → 在线 RL(GRPO)→ 评测 → 量化部署**。
@@ -241,15 +254,6 @@ def _(PROJ, mo, p7_btn, quant_action, sh):
     mo.stop(not p7_btn.value, mo.md("_quant=AWQ/GPTQ 量化导出;deploy=vLLM 起服务;bench=吞吐/延迟压测。_"))
     sh(f"bash phase7_quant_deploy/run_quant_deploy.sh {quant_action.value}", cwd=PROJ)
     return
-
-
-@app.cell
-def _():
-    import marimo as mo
-    import os
-    import subprocess
-
-    return mo, os, subprocess
 
 
 if __name__ == "__main__":
