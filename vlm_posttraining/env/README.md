@@ -27,7 +27,8 @@
 - **Phase 0 引导**:`bash env/setup_molab.sh` —— 只装推理上层依赖,**不碰预装 torch**,走 HuggingFace 直连。
 - **持久化**:所有产物落 `/marimo/vlm/`(common.sh 自动指过去),关机重开还在。
 - **session 限制**:单次最长 12h、闲置 90min 自动停机。长训练拆成可续跑的小段,或用 `--resume_from_checkpoint`。
-- **下载源**:美区直连 HuggingFace,不用 network_turbo / hf-mirror(common.sh 在 molab 下默认 `USE_HF=1`)。
+- **下载源**:统一走 **ModelScope**(`USE_HF=0`,common.sh 默认)。本项目数据集(coco_caption、RLAIF-V 偏好数据)
+  是 ModelScope 独有且带 ms-swift 预处理格式;molab 美区拉 ModelScope 稍慢但能通。模型也从 ModelScope 下。
 
 ### AutoDL(备用路径)
 

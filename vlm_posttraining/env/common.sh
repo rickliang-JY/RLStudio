@@ -17,9 +17,10 @@ export DATA_ROOT
 export HF_HOME=${HF_HOME:-$DATA_ROOT/hf_cache}
 export MODELSCOPE_CACHE=${MODELSCOPE_CACHE:-$DATA_ROOT/modelscope_cache}
 export CUDA_VISIBLE_DEVICES=${CUDA_VISIBLE_DEVICES:-0}
-# ms-swift 下载源:ModelScope(国内/AutoDL 更稳)或 HuggingFace(海外/molab 更快)。
-# 默认按平台走:molab(/marimo,美区)默认 HF;AutoDL 默认 ModelScope。可 export USE_HF 覆盖。
-if [ "$DATA_ROOT" = /marimo ]; then export USE_HF=${USE_HF:-1}; else export USE_HF=${USE_HF:-0}; fi
+# 下载源统一走 ModelScope(USE_HF=0)。原因:本项目的多模态数据集(coco_2014_caption、
+# RLAIF-V 偏好数据)是 ModelScope 独有,且带 ms-swift 注册好的预处理格式;HF 上要么没有、
+# 要么列名对不上。molab 在美区拉 ModelScope 稍慢但能通。想强制走 HF:export USE_HF=1。
+export USE_HF=${USE_HF:-0}
 
 # --- 路径 ---
 export BASE_MODEL=${BASE_MODEL:-Qwen/Qwen2-VL-2B-Instruct}
