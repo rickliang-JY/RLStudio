@@ -45,15 +45,25 @@ def _(os, subprocess):
     PROJ = os.path.join(REPO, "vlm_posttraining")
 
     def sh(cmd, cwd=None):
-        """跑一条 shell 命令,实时把输出打印到 cell 下方。返回退出码。"""
+        """跑一条 shell 命令,打印到 cell 下方。返回退出码。
+        清理:tqdm 进度条用 \\r 刷新,在非终端里会堆成空行墙 —— 只保留每段最后一帧,
+        并合并连续空行,输出干净得多。"""
         print(f"$ {cmd}\n", flush=True)
         p = subprocess.Popen(
             cmd, shell=True, cwd=cwd,
             stdout=subprocess.PIPE, stderr=subprocess.STDOUT,
             text=True, bufsize=1,
         )
-        for line in p.stdout:
-            print(line, end="", flush=True)
+        prev_blank = False
+        for raw in p.stdout:
+            line = raw.split("\r")[-1].rstrip("\n")   # \r 刷新只留最后一帧
+            if line.strip() == "":
+                if prev_blank:
+                    continue                          # 连续空行只留一行
+                prev_blank = True
+            else:
+                prev_blank = False
+            print(line, flush=True)
         p.wait()
         print(f"\n[exit {p.returncode}]", flush=True)
         return p.returncode
