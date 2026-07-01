@@ -11,6 +11,14 @@ echo "[before] torch=$TORCH_BEFORE"
 echo ">>> 安装 ms-swift"
 pip install -q -U ms-swift
 
+# datasets 4.0 起彻底删掉了「加载脚本」支持(会报 "Dataset scripts are no longer supported"),
+# 而 ms-swift 的多模态数据集(coco_2014_caption 等)不少仍以脚本形式托管。molab 预装的是 datasets 4.x,
+# 直接跑会在加载数据这步崩。ms-swift 4.3.2 允许 datasets>=3.0,<4.8.5,所以退到 3.x 是官方支持的合法配置,
+# 且能一次性修好所有阶段的脚本型数据集。只动 datasets,不碰 torch。
+echo ">>> 固定 datasets<4(恢复脚本型数据集支持)"
+pip install -q "datasets<4"
+python -c "import datasets; print('[datasets]', datasets.__version__)"
+
 if [ "${1:-}" = "full" ]; then
   echo ">>> 安装 vllm + evalscope(VLMEvalKit 后端)"
   # 注:vllm 版本需与 torch/CUDA 匹配;5090 需较新 vllm。若它想换 torch,先 Ctrl-C 改用 --no-deps 手动处理。
