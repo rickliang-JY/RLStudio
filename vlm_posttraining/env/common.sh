@@ -1,17 +1,29 @@
 #!/usr/bin/env bash
 # 各阶段共享变量与工具,被各 run_*.sh `source`。
-# 约定:单卡 5090 + Qwen2-VL-2B,全程 LoRA,产物全放数据盘 /root/autodl-tmp。
+# 约定:单卡(5090 / PRO 6000)+ Qwen2-VL-2B,全程 LoRA,产物全放持久数据盘。
+
+# --- 数据盘根目录:自动探测平台 ---
+# molab 用 /marimo(7T 持久盘);AutoDL 用 /root/autodl-tmp;都没有则退回 $HOME。
+# 想强制指定:export DATA_ROOT=/your/path 后再 source。
+if [ -z "${DATA_ROOT:-}" ]; then
+  if   [ -d /marimo ];          then DATA_ROOT=/marimo
+  elif [ -d /root/autodl-tmp ]; then DATA_ROOT=/root/autodl-tmp
+  else                               DATA_ROOT=$HOME/vlm-data
+  fi
+fi
+export DATA_ROOT
 
 # --- 缓存 / 设备 ---
-export HF_HOME=${HF_HOME:-/root/autodl-tmp/hf_cache}
-export MODELSCOPE_CACHE=${MODELSCOPE_CACHE:-/root/autodl-tmp/modelscope_cache}
+export HF_HOME=${HF_HOME:-$DATA_ROOT/hf_cache}
+export MODELSCOPE_CACHE=${MODELSCOPE_CACHE:-$DATA_ROOT/modelscope_cache}
 export CUDA_VISIBLE_DEVICES=${CUDA_VISIBLE_DEVICES:-0}
-# ms-swift 默认从 ModelScope 拉模型/数据(国内更稳);设 USE_HF=1 改走 HuggingFace。
-export USE_HF=${USE_HF:-0}
+# ms-swift 下载源:ModelScope(国内/AutoDL 更稳)或 HuggingFace(海外/molab 更快)。
+# 默认按平台走:molab(/marimo,美区)默认 HF;AutoDL 默认 ModelScope。可 export USE_HF 覆盖。
+if [ "$DATA_ROOT" = /marimo ]; then export USE_HF=${USE_HF:-1}; else export USE_HF=${USE_HF:-0}; fi
 
 # --- 路径 ---
 export BASE_MODEL=${BASE_MODEL:-Qwen/Qwen2-VL-2B-Instruct}
-export WORK=${WORK:-/root/autodl-tmp/vlm}
+export WORK=${WORK:-$DATA_ROOT/vlm}
 export CKPT_DIR=$WORK/ckpt        # LoRA 训练输出(adapter)
 export MODEL_DIR=$WORK/models     # merge 后的完整模型(供下游 / 评测 / 量化)
 export LOG_DIR=$WORK/logs
@@ -38,4 +50,4 @@ merge_lora() {
   swift export --adapters "$ckpt" --merge_lora true --output_dir "$MODEL_DIR/$name"
 }
 
-echo "[common] BASE_MODEL=$BASE_MODEL  WORK=$WORK  GPU=$CUDA_VISIBLE_DEVICES  REPORT=$REPORT"
+echo "[common] DATA_ROOT=$DATA_ROOT  BASE_MODEL=$BASE_MODEL  WORK=$WORK  GPU=$CUDA_VISIBLE_DEVICES  REPORT=$REPORT"
