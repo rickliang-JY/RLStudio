@@ -16,7 +16,7 @@ swift rlhf \
   --rlhf_type "$TYPE" \
   --model "$SFT_MODEL" \
   --dataset "$DATASET" \
-  --train_type lora \
+  --tuner_type lora \
   --torch_dtype bfloat16 \
   --num_train_epochs 1 \
   --per_device_train_batch_size 1 \
@@ -32,6 +32,7 @@ swift rlhf \
   --logging_steps 5 \
   --report_to "$REPORT" \
   --output_dir "$CKPT_DIR/$TYPE" 2>&1 | tee "$LOG_DIR/$TYPE.log"
+st=${PIPESTATUS[0]}; [ "$st" -eq 0 ] || { echo "!! $TYPE 训练失败(exit $st),见上方报错 / $LOG_DIR/$TYPE.log"; exit "$st"; }
 
 CKPT=$(last_ckpt "$CKPT_DIR/$TYPE")
 [ -n "$CKPT" ] && merge_lora "$CKPT" "qwen2vl2b-$TYPE" || echo "!! 未找到 $TYPE checkpoint"

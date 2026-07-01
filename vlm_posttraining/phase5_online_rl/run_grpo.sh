@@ -18,7 +18,7 @@ swift rlhf \
   --model "$SFT_MODEL" \
   --reward_model "$RM_MODEL" \
   --dataset "$DATASET" \
-  --train_type lora \
+  --tuner_type lora \
   --torch_dtype bfloat16 \
   --num_generations "$NGEN" \
   --use_vllm true --vllm_mode colocate --vllm_gpu_memory_utilization 0.4 \
@@ -35,6 +35,7 @@ swift rlhf \
   --logging_steps 2 \
   --report_to "$REPORT" \
   --output_dir "$CKPT_DIR/grpo" 2>&1 | tee "$LOG_DIR/grpo.log"
+st=${PIPESTATUS[0]}; [ "$st" -eq 0 ] || { echo "!! GRPO 训练失败(exit $st),见上方报错 / $LOG_DIR/grpo.log"; exit "$st"; }
 
 CKPT=$(last_ckpt "$CKPT_DIR/grpo")
 [ -n "$CKPT" ] && merge_lora "$CKPT" "qwen2vl2b-grpo" || echo "!! 未找到 GRPO checkpoint"
