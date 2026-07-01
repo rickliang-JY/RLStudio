@@ -21,6 +21,10 @@ export CUDA_VISIBLE_DEVICES=${CUDA_VISIBLE_DEVICES:-0}
 # RLAIF-V 偏好数据)是 ModelScope 独有,且带 ms-swift 注册好的预处理格式;HF 上要么没有、
 # 要么列名对不上。molab 在美区拉 ModelScope 稍慢但能通。想强制走 HF:export USE_HF=1。
 export USE_HF=${USE_HF:-0}
+# 脚本型数据集(coco_2014_caption 等)带自定义加载代码,datasets 3.x 加载时会交互式问
+# "Do you wish to run the custom code? [y/N]";notebook 非终端里 input() 直接 EOFError。
+# 设这个 env 让 datasets 自动信任、跳过提问(等价于 trust_remote_code=True)。
+export HF_DATASETS_TRUST_REMOTE_CODE=${HF_DATASETS_TRUST_REMOTE_CODE:-1}
 
 # --- 路径 ---
 export BASE_MODEL=${BASE_MODEL:-Qwen/Qwen2-VL-2B-Instruct}
