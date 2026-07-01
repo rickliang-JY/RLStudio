@@ -4,9 +4,9 @@
 set -uo pipefail
 HERE="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"; source "$HERE/../env/common.sh"
 
-# 数据集:ms-swift 内置多模态数据,按名即用。下面默认用 COCO caption 子集做 SFT 演示。
-# 想换 VQA 类:export DATASET='swift/OK-VQA_train#5000' 等(见 ms-swift 文档「支持的数据集」)。
-DATASET=${DATASET:-'modelscope/coco_2014_caption#3000'}
+# 数据集:ms-swift 多模态数据,语法 `名字:subset#数量`。coco_2014_caption 有 train/validation 两个 subset,
+# 必须显式选(4.x 不选会报 "Please provide subsets")。想换 VQA 类见 ms-swift 文档「支持的数据集」。
+DATASET=${DATASET:-'modelscope/coco_2014_caption:train#3000'}
 
 echo ">>> SFT on $DATASET"
 swift sft \
