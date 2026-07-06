@@ -17,8 +17,8 @@ DATASETS=${DATASETS:-'POPE MMBench_DEV_EN MMVet'}
 OUT=$WORK/eval_results; mkdir -p "$OUT"
 
 for m in "${MODELS[@]}"; do
-  # 基座是仓库名(无路径),其余要求目录存在
-  if [[ "$m" != */* || -d "$m" ]]; then
+  # 基座是仓库名(如 Qwen/Qwen2-VL-2B-Instruct,非绝对路径),其余是本地目录、要求存在
+  if [[ "$m" != /* || -d "$m" ]]; then
     tag=$(basename "$m")
     echo "==================== EVAL: $tag ===================="
     swift eval \
