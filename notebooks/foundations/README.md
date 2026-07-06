@@ -44,7 +44,7 @@ D:\Program\Anaconda\envs\marimo\python.exe -m marimo export html --no-include-co
 
 - 5×5 网格，状态 `s = y*cols + x`（蓝色=目标，黄色=禁区）。
 - 动作顺序：`0=上, 1=右, 2=下, 3=左, 4=原地`。
-- 奖励：到达目标 `+1`，进入禁区 `−1`，撞墙 `−1`，普通一步 `−1`，`γ=0.9`。
+- 奖励：到达目标 `+1`，进入禁区 `−1`，撞墙 `−1`，普通一步 `0`，`γ=0.9`。
 - `env.build_model()` 给出 `P[s,a,s'], R[s,a]`，供第 2–4 章 model-based 算法使用；
   `env.reset()/env.step()` 给出采样接口，供第 5–10 章 model-free 算法使用。
 
