@@ -888,28 +888,15 @@ def _(np):
 
 @app.cell
 def _():
-    import os
-    import sys
     import numpy as np
     import matplotlib
     import matplotlib.pyplot as plt
     from matplotlib import patches
-    from gridworld import GridWorld, greedy_policy_from_q, ACTIONS
     matplotlib.rcParams["font.sans-serif"] = ["Microsoft YaHei", "SimHei", "DejaVu Sans"]
     matplotlib.rcParams["axes.unicode_minus"] = False
 
-    # Wanderland is a published PyPI package: `pip install wanderland`. If it is not
-    # installed, fall back to a local checkout under repo/ (gitignored, not shipped) —
-    # convenient for local dev; a fresh clone should just `pip install wanderland`.
-    try:
-        import wanderland  # noqa: F401
-    except ModuleNotFoundError:
-        import gridworld as _gw
-        _base = os.path.dirname(os.path.abspath(_gw.__file__))
-        _src = os.path.abspath(os.path.join(
-            _base, "..", "..", "repo", "wanderland-main", "src"))
-        if os.path.isdir(_src) and _src not in sys.path:
-            sys.path.insert(0, _src)
+    # Wanderland is a published PyPI package, declared in the PEP 723 header above so
+    # marimo.app / molab install it automatically. Locally: `pip install wanderland`.
     try:
         from wanderland import World, Puzzle
     except ModuleNotFoundError as _e:
@@ -918,7 +905,7 @@ def _():
             "pip install wanderland"
         ) from _e
 
-    return ACTIONS, GridWorld, Puzzle, World, greedy_policy_from_q, np, patches
+    return Puzzle, World, np, patches, plt
 
 
 @app.cell
@@ -929,14 +916,121 @@ def _():
 
 
 @app.cell
-def _(GridWorld, np):
-    # ---- MazeGridWorld: walls as truly impassable cells (distinct from lava) ----
-    # Only in_bounds() is overridden: entering a wall is treated exactly like the grid
-    # edge (stay put + r_boundary). Since transition()/build_model()/step() all route
-    # through self.in_bounds, every algorithm respects walls automatically.
+def _(np, patches, plt):
+    # ---- self-contained grid world + maze extension (inlined from
+    #      foundations/gridworld.py so this lab runs standalone in molab / WASM,
+    #      with no sibling-module dependency and no name clash with the PyPI
+    #      'gridworld' package) ----
     from dataclasses import dataclass, field
     from collections import deque
 
+    ACTIONS = [(0, -1), (1, 0), (0, 1), (-1, 0), (0, 0)]  # up, right, down, left, stay
+
+    @dataclass
+    class GridWorld:
+        cols: int = 5
+        rows: int = 5
+        start: tuple = (0, 0)
+        target: tuple = (2, 3)
+        forbidden: tuple = ()
+        r_target: float = 1.0
+        r_forbidden: float = -1.0
+        r_step: float = 0.0
+        r_boundary: float = -1.0
+        gamma: float = 0.9
+        forbidden_set: set = field(init=False)
+
+        def __post_init__(self):
+            self.forbidden_set = set(map(tuple, self.forbidden))
+            self.n_states = self.rows * self.cols
+            self.n_actions = len(ACTIONS)
+            self.agent = self.start
+
+        def s_of(self, x, y):
+            return y * self.cols + x
+
+        def xy_of(self, s):
+            return (s % self.cols, s // self.cols)
+
+        def in_bounds(self, x, y):
+            return 0 <= x < self.cols and 0 <= y < self.rows
+
+        def _cell_reward(self, x, y):
+            if (x, y) == tuple(self.target):
+                return self.r_target
+            if (x, y) in self.forbidden_set:
+                return self.r_forbidden
+            return self.r_step
+
+        def transition(self, s, a):
+            x, y = self.xy_of(s)
+            dx, dy = ACTIONS[a]
+            nx, ny = x + dx, y + dy
+            if not self.in_bounds(nx, ny):
+                return s, self.r_boundary
+            return self.s_of(nx, ny), self._cell_reward(nx, ny)
+
+        def build_model(self):
+            P = np.zeros((self.n_states, self.n_actions, self.n_states))
+            R = np.zeros((self.n_states, self.n_actions))
+            for s in range(self.n_states):
+                for a in range(self.n_actions):
+                    ns, r = self.transition(s, a)
+                    P[s, a, ns] = 1.0
+                    R[s, a] = r
+            return P, R
+
+        def reset(self, state=None):
+            if state is None:
+                self.agent = self.start
+            elif isinstance(state, (int, np.integer)):
+                self.agent = self.xy_of(int(state))
+            else:
+                self.agent = tuple(state)
+            return self.s_of(*self.agent)
+
+        def step(self, a):
+            s = self.s_of(*self.agent)
+            ns, r = self.transition(s, a)
+            self.agent = self.xy_of(ns)
+            done = self.xy_of(ns) == tuple(self.target)
+            return ns, r, done, {}
+
+        def _base_ax(self, ax, title=None):
+            ax.set_xlim(-0.5, self.cols - 0.5)
+            ax.set_ylim(-0.5, self.rows - 0.5)
+            ax.set_xticks(np.arange(-0.5, self.cols, 1))
+            ax.set_yticks(np.arange(-0.5, self.rows, 1))
+            ax.grid(True, color="gray", linewidth=1)
+            ax.set_aspect("equal")
+            ax.invert_yaxis()
+            ax.xaxis.set_ticks_position("top")
+            ax.tick_params(labelbottom=False, labelleft=False, labeltop=False,
+                           bottom=False, left=False, right=False, top=False)
+            for (fx, fy) in self.forbidden_set:
+                ax.add_patch(patches.Rectangle((fx - 0.5, fy - 0.5), 1, 1,
+                             facecolor=(0.929, 0.694, 0.125)))
+            tx, ty = self.target
+            ax.add_patch(patches.Rectangle((tx - 0.5, ty - 0.5), 1, 1,
+                         facecolor=(0.301, 0.745, 0.933)))
+            if title:
+                ax.set_title(title, pad=22)
+
+        def plot(self, title=None, figsize=(4.4, 4.4)):
+            fig, ax = plt.subplots(figsize=figsize)
+            self._base_ax(ax, title)
+            return fig, ax
+
+    def greedy_policy_from_q(_Q):
+        """Deterministic (one-hot) policy greedy w.r.t. action values Q."""
+        _pi = np.zeros_like(_Q)
+        _pi[np.arange(_Q.shape[0]), _Q.argmax(axis=1)] = 1.0
+        return _pi
+
+    # MazeGridWorld: walls as truly impassable cells (distinct from lava). Only
+    # in_bounds() is overridden (entering a wall == the grid edge: stay + r_boundary);
+    # transition()/build_model()/step() all route through it, so every algorithm
+    # respects walls automatically.
     @dataclass
     class MazeGridWorld(GridWorld):
         walls: tuple = ()
@@ -1017,7 +1111,7 @@ def _(GridWorld, np):
         _idx = _rng.permutation(len(_cand))[:min(_n, len(_cand))]
         return tuple(sorted(_cand[_i] for _i in _idx))
 
-    return MazeGridWorld, generate_maze, random_lava
+    return ACTIONS, MazeGridWorld, generate_maze, greedy_policy_from_q, random_lava
 
 
 @app.cell
