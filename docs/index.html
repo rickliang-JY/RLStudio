@@ -408,7 +408,7 @@
         { icon: "⬢", title: { zh: "Wanderland 3D 实验场", en: "Wanderland 3D Lab" },
           desc: { zh: "在低多边形 3D 世界里让 Mo 走出学到的策略：设计网格，加墙 / 迷宫 / 熔岩，选任意算法，还能拖进度条看它从打转一步步学到直奔目标。",
                   en: "Watch Mo walk the learned policy in a low-poly 3D world: design the grid, add walls / maze / lava, pick any algorithm, and scrub the training to watch it go from looping to a clean optimal path." },
-          time: 0, level: { zh: "自由探索", en: "Free play" }, nb: "wanderland_gridworld_lab.py", status: "open" }
+          time: 0, level: { zh: "自由探索", en: "Free play" }, nb: "wanderland_gridworld_lab.py", molab: true, status: "open" }
       ]
     },
     {
@@ -634,6 +634,7 @@
   const nbHref = (card, secId) =>
     `notebook.html?file=${enc(card.nb)}&title=${enc(t(card.title))}` +
     (card.torch ? "&torch=1" : "") +
+    (card.molab ? "&molab=1" : "") +
     (secId ? `&from=${enc(secId)}` : "");
 
   /* ---------- 程序生成的迷你 grid world 缩略图（占位，可后替换为真实图） ---------- */
@@ -762,7 +763,8 @@
       metaItems =
         `<span class="m">⏱ ${timeTxt}</span>` +
         (card.level ? `<span class="m">◆ ${t(card.level)}</span>` : "") +
-        (card.torch ? `<span class="m torch">PyTorch</span>` : "");
+        (card.torch ? `<span class="m torch">PyTorch</span>` : "") +
+        (card.molab ? `<span class="m torch">molab</span>` : "");
     }
     body.innerHTML =
       `<div class="ltop">${numHtml}<h3>${t(card.title)}</h3></div>` +

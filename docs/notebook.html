@@ -111,6 +111,19 @@
             在 molab 用真实内核运行 ↗
           </a>
         </div>`;
+    } else if (q.get("molab") === "1") {
+      molabEl.style.display = "none";
+      stage.innerHTML = `
+        <div class="notice">
+          <div class="ic">🌱</div>
+          <h2>3D 交互实验场</h2>
+          <p>这个实验场用 Wanderland 的低多边形 3D 组件（anywidget）与 wanderland 包，
+             浏览器内嵌（WebAssembly）暂不支持。点下方按钮在 molab 的真实内核里运行——
+             已可直接玩、并能 Fork 修改。</p>
+          <a class="run" href="${molabUrl(file)}" target="_blank" rel="noopener">
+            在 molab 用真实内核运行 ↗
+          </a>
+        </div>`;
     } else {
       iframe(embedUrl(file));
     }
