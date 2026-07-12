@@ -64,9 +64,14 @@ RLStudio 跟随赵世钰《Mathematical Foundations of Reinforcement Learning》
 notebook 用 [marimo](https://marimo.io) 编写。装好依赖后即可编辑：
 
 ```bash
-pip install marimo numpy matplotlib torch   # torch 仅第 8 章需要
+pip install -r requirements.txt              # marimo / numpy / matplotlib / wanderland
+pip install torch                            # 仅第 8 章 DQN 需要，按需安装
 marimo edit notebooks/foundations/ch07_temporal_difference.py
 ```
+
+> **实验场的 Wanderland 3D lab**（`wanderland_gridworld_lab.py`）依赖第三方已发布包
+> [`wanderland`](https://pypi.org/project/wanderland/)（`pip install wanderland` 即可，已含在
+> `requirements.txt`）。该包的源码**不随本仓库分发**，本地 `repo/` 副本已被 `.gitignore` 忽略。
 
 常用命令：
 
@@ -105,9 +110,13 @@ RLStudio/
         ├── gridworld.py        公共 grid world 环境与可视化
         ├── chXX_*.py           第 1–10 章算法实现
         ├── chXX_examples.py    书中例子复现
-        ├── custom_gridworld_lab.py   自定义实验场
+        ├── custom_gridworld_lab.py       自定义实验场（matplotlib 表格视图）
+        ├── wanderland_gridworld_lab.py   Wanderland 3D 实验场（Mo 走最优策略；需 wanderland）
         └── __marimo__/session/ 静态预览所需的会话快照（请勿删除）
 ```
+
+> `repo/`（本地 Wanderland 源码副本）已被 `.gitignore` 忽略，不纳入版本控制 ——
+> 运行 3D 实验场只需 `pip install wanderland`。
 
 ## 实现说明
 

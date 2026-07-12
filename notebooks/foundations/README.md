@@ -19,10 +19,14 @@
 | `ch08_value_function_approximation.py` | 8 值函数近似 | 线性 TD、DQN（经验回放 + 目标网络）|
 | `ch09_policy_gradient.py` | 9 策略梯度 | REINFORCE（带基线）|
 | `ch10_actor_critic.py` | 10 Actor-Critic | QAC、A2C（优势/TD-error）|
+| `custom_gridworld_lab.py` | 实验场 | 自定义 grid world，7 种算法并排对比（matplotlib 表格视图） |
+| `wanderland_gridworld_lab.py` | 实验场 | 在 Wanderland 3D 世界里让 Mo 走出学到的策略（可加墙/迷宫、看学习过程；需 `pip install wanderland`） |
 
 ## 运行方式
 
 本项目使用专用的 conda 环境 `marimo`（含 marimo / numpy / matplotlib / torch）。
+Wanderland 3D 实验场（`wanderland_gridworld_lab.py`）还需第三方已发布包 wanderland：
+`pip install wanderland`。
 
 ```bash
 # 进入本目录

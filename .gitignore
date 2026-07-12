@@ -3,6 +3,10 @@ __pycache__/
 *.py[cod]
 .ipynb_checkpoints/
 
+# Vendored third-party checkouts (e.g. Wanderland source under repo/wanderland-main).
+# These are published packages — install via `pip install wanderland`, don't commit them.
+repo/
+
 # marimo scratch output (keep __marimo__/session/ — needed for molab静态预览出图)
 _test.png
 

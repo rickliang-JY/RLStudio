@@ -1,0 +1,13 @@
+# RLStudio — notebook dependencies
+#
+# Install with:  pip install -r requirements.txt
+# (or the inline commands in README.md)
+
+marimo            # 交互式 notebook 运行时
+numpy             # 数值计算（所有章节）
+matplotlib        # 可视化（所有章节）
+
+wanderland>=0.1.1 # Wanderland 3D 实验场：notebooks/foundations/wanderland_gridworld_lab.py
+                  # 第三方已发布包，含预构建前端；本仓库不再 vendored（见 .gitignore 的 repo/）
+
+# torch           # 仅第 8 章 DQN 需要，按需单独安装：pip install torch
