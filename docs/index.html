@@ -397,14 +397,18 @@
     {
       id: "lab", num: "03", group: { zh: "实验场", en: "Playground" },
       title: { zh: "实验场", en: "Playground" },
-      subtitle: { zh: "自定义 grid world，随手改地图和参数",
-                  en: "Build your own grid world; change the map and parameters at will." },
+      subtitle: { zh: "自定义 grid world，随手改地图和参数；还有 3D 版让 Mo 走出学到的策略",
+                  en: "Build your own grid world; plus a 3D version where Mo walks the learned policy." },
       status: "open",
       cards: [
         { icon: "▦", title: { zh: "自定义网格世界实验场", en: "Custom Grid World Lab" },
           desc: { zh: "拖滑块调奖励、折扣率与探索率，画笔改地图布局，实时观察策略与值函数随之变化。",
                   en: "Drag sliders for rewards, discount and exploration; paint the map; watch the policy and value function update in real time." },
-          time: 0, level: { zh: "自由探索", en: "Free play" }, nb: "custom_gridworld_lab.py", status: "open" }
+          time: 0, level: { zh: "自由探索", en: "Free play" }, nb: "custom_gridworld_lab.py", status: "open" },
+        { icon: "⬢", title: { zh: "Wanderland 3D 实验场", en: "Wanderland 3D Lab" },
+          desc: { zh: "在低多边形 3D 世界里让 Mo 走出学到的策略：设计网格，加墙 / 迷宫 / 熔岩，选任意算法，还能拖进度条看它从打转一步步学到直奔目标。",
+                  en: "Watch Mo walk the learned policy in a low-poly 3D world: design the grid, add walls / maze / lava, pick any algorithm, and scrub the training to watch it go from looping to a clean optimal path." },
+          time: 0, level: { zh: "自由探索", en: "Free play" }, nb: "wanderland_gridworld_lab.py", status: "open" }
       ]
     },
     {
