@@ -345,11 +345,9 @@ def _(mo, t):
 @app.cell(hide_code=True)
 def _(
     Puzzle,
-    World,
     algo_select,
     alpha_s,
     build_puzzle,
-    char_dd,
     env,
     ep_s,
     eps_s,
@@ -364,39 +362,74 @@ def _(
     run_btn,
     sarsa,
     seed_s,
-    speed_s,
     t,
     traj_to_commands,
     vi_ep,
 ):
-    mo.stop(not run_btn.value,
-            mo.md(t("⬆️ **设好世界和算法后,点「▶ 求解并让 Mo 行走」**,这里出现 3D 场景。",
-                    "⬆️ **Design the world & pick an algorithm, then click "
-                    "「▶ Solve & let Mo walk」** — the 3D scene appears here.")))
-
-    _max_steps = max(4 * env.n_states, 60)
-    _algo = algo_select.value
-    _model_free = {
-        "MC Basic": mc_basic,
-        "MC 探索起点 ES": mc_exploring_starts,
-        "MC ε-贪心": mc_epsilon,
-        "Sarsa": sarsa,
-        "Q-learning": q_learning,
-    }
-    if _algo == "值迭代 VI":
-        _Q = vi_ep(env, env.gamma)
-    elif _algo == "策略迭代 PI":
-        _Q = pi_ep(env, env.gamma)
+    # Solve, then hand the next cell a *plan* (puzzle + command list) rather than a World.
+    # Building the World lives in its own cell on purpose — see the note there.
+    if not run_btn.value:
+        plan = None
+        _hint = mo.md(t("⬆️ **设好世界和算法后,点「▶ 求解并让 Mo 行走」**,这里出现 3D 场景。",
+                        "⬆️ **Design the world & pick an algorithm, then click "
+                        "「▶ Solve & let Mo walk」** — the 3D scene appears here."))
     else:
-        _Q = _model_free[_algo](env, env.gamma, alpha_s.value, eps_s.value,
-                                ep_s.value, seed_s.value, _max_steps)
+        _max_steps = max(4 * env.n_states, 60)
+        _algo = algo_select.value
+        _model_free = {
+            "MC Basic": mc_basic,
+            "MC 探索起点 ES": mc_exploring_starts,
+            "MC ε-贪心": mc_epsilon,
+            "Sarsa": sarsa,
+            "Q-learning": q_learning,
+        }
+        if _algo == "值迭代 VI":
+            _Q = vi_ep(env, env.gamma)
+        elif _algo == "策略迭代 PI":
+            _Q = pi_ep(env, env.gamma)
+        else:
+            _Q = _model_free[_algo](env, env.gamma, alpha_s.value, eps_s.value,
+                                    ep_s.value, seed_s.value, _max_steps)
 
-    _states, _acts = rollout_greedy(env, _Q, _max_steps)
-    _init_h, _names = traj_to_commands(env, _acts)
-    _puzzle = build_puzzle(env, Puzzle, _init_h, obstacle_skin.value)
-    _w = World(_puzzle, character=char_dd.value, speed=speed_s.value)
-    _res = _w.act(_names, play=False)
-    world = mo.ui.anywidget(_w)
+        _states, _acts = rollout_greedy(env, _Q, _max_steps)
+        _init_h, _names = traj_to_commands(env, _acts)
+        plan = {
+            "algo": _algo,
+            "puzzle": build_puzzle(env, Puzzle, _init_h, obstacle_skin.value),
+            "names": _names,
+        }
+        _hint = None
+    _hint
+    return (plan,)
+
+
+@app.cell(hide_code=True)
+def _(World, char_dd, mo, plan, speed_s):
+    # ONE World per plan, built here and nowhere else.
+    #
+    # When playback finishes, Wanderland's frontend writes the `state` trait — a value
+    # change on `world` — so every cell that *reads* `world` re-runs. Wanderland is built
+    # for that: `act(play=False)`/`load()` are idempotent, and re-loading an unchanged
+    # timeline is a no-op that leaves Mo standing on the goal. But the guard compares
+    # against `self.timeline`, so it only works if the *same* World survives the re-run.
+    # Rebuild the World inside the driving cell and every finished run mints a fresh
+    # (empty-timeline) widget — which is exactly Mo snapping back to the start.
+    #
+    # This cell doesn't read `world`, so playback never re-runs it; the World is rebuilt
+    # only when the plan / character / speed actually change.
+    world = (
+        mo.ui.anywidget(World(plan["puzzle"], character=char_dd.value, speed=speed_s.value))
+        if plan
+        else None
+    )
+    return (world,)
+
+
+@app.cell(hide_code=True)
+def _(mo, plan, t, world):
+    mo.stop(world is None)
+
+    _res = world.act(plan["names"], play=False)  # idempotent: a no-op on playback re-runs
 
     if _res.get("died"):
         _verdict = t("🌋 Mo 走进了熔岩(踩到禁区)—— 这个策略没学好,试试换算法/加 episode/调奖励。",
@@ -412,8 +445,8 @@ def _(
                      "(the policy may be looping).")
 
     mo.vstack([
-        mo.md(t(f"### 🎬 {_algo} 学到的策略 —— 让 Mo 走一遍",
-                f"### 🎬 The policy learned by {_algo} — watch Mo walk it")),
+        mo.md(t(f"### 🎬 {plan['algo']} 学到的策略 —— 让 Mo 走一遍",
+                f"### 🎬 The policy learned by {plan['algo']} — watch Mo walk it")),
         world,
         mo.md(_verdict),
     ])
@@ -489,32 +522,59 @@ def _(mo, snapshots, t):
 @app.cell(hide_code=True)
 def _(
     Puzzle,
-    World,
     build_puzzle,
-    char_dd,
     env,
     mo,
     obstacle_skin,
     rollout_greedy,
     snapshots,
-    speed_s,
     stage,
     t,
     traj_to_commands,
 ):
-    mo.stop(not snapshots,
-            mo.md(t("(记录学习过程后,这里出现可拖动回放的 3D 场景。)",
-                    "(After recording, a scrubbable 3D replay appears here.)")))
+    # Same three-cell split as section 4: plan here, World next door, drive after that.
+    if not snapshots:
+        learn_plan = None
+        _hint = mo.md(t("(记录学习过程后,这里出现可拖动回放的 3D 场景。)",
+                        "(After recording, a scrubbable 3D replay appears here.)"))
+    else:
+        _k = min(stage.value, len(snapshots) - 1)
+        _label, _Q = snapshots[_k]
+        _max_steps = max(4 * env.n_states, 60)
+        _states, _acts = rollout_greedy(env, _Q, _max_steps)
+        _init_h, _names = traj_to_commands(env, _acts)
+        learn_plan = {
+            "puzzle": build_puzzle(env, Puzzle, _init_h, obstacle_skin.value),
+            "names": _names,
+            "label": _label,
+            "k": _k,
+            "n": len(snapshots),
+        }
+        _hint = None
+    _hint
+    return (learn_plan,)
 
-    _k = min(stage.value, len(snapshots) - 1)
-    _label, _Q = snapshots[_k]
-    _max_steps = max(4 * env.n_states, 60)
-    _states, _acts = rollout_greedy(env, _Q, _max_steps)
-    _init_h, _names = traj_to_commands(env, _acts)
-    _w = World(build_puzzle(env, Puzzle, _init_h, obstacle_skin.value),
-               character=char_dd.value, speed=speed_s.value)
-    _res = _w.act(_names, play=False)
-    world_learn = mo.ui.anywidget(_w)
+
+@app.cell(hide_code=True)
+def _(World, char_dd, learn_plan, mo, speed_s):
+    # Persistent World for the learning replay — same reasoning as the walk cell above:
+    # it must survive the re-run that a finished playback triggers, or Mo resets.
+    # Scrubbing the "training progress" slider changes learn_plan, so a new stage does
+    # get a fresh World — which is what we want.
+    world_learn = (
+        mo.ui.anywidget(World(learn_plan["puzzle"], character=char_dd.value,
+                              speed=speed_s.value))
+        if learn_plan
+        else None
+    )
+    return (world_learn,)
+
+
+@app.cell(hide_code=True)
+def _(learn_plan, mo, t, world_learn):
+    mo.stop(world_learn is None)
+
+    _res = world_learn.act(learn_plan["names"], play=False)  # idempotent on re-runs
 
     if _res.get("died"):
         _v = t("🌋 走进熔岩", "🌋 into the lava")
@@ -526,8 +586,10 @@ def _(
                f"⚠️ not reached in {_res.get('steps', 0)} steps (looping)")
 
     mo.vstack([
-        mo.md(t(f"### 🎓 学习阶段 {_k + 1}/{len(snapshots)} · {_label} — {_v}",
-                f"### 🎓 Stage {_k + 1}/{len(snapshots)} · {_label} — {_v}")),
+        mo.md(t(f"### 🎓 学习阶段 {learn_plan['k'] + 1}/{learn_plan['n']} · "
+                f"{learn_plan['label']} — {_v}",
+                f"### 🎓 Stage {learn_plan['k'] + 1}/{learn_plan['n']} · "
+                f"{learn_plan['label']} — {_v}")),
         world_learn,
         mo.md(t("拖上面的「训练进度」对比不同训练量下 Mo 的走法;按场景内 ▶ Run 播放。",
                 "Drag \"Training progress\" above to compare Mo's walk at different amounts "
