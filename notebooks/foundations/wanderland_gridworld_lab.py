@@ -1,10 +1,15 @@
 # /// script
 # requires-python = ">=3.10"
 # dependencies = [
-#     "marimo",
+#     # Pinned to the set this lab is verified against. Left unpinned, molab/uv installs
+#     # the newest marimo + anywidget, whose ESM loader fails to load Wanderland's 3D
+#     # widget bundle ("missing a default export" — the bundle IS AFM-compliant; the
+#     # newer loader just can't load it). These versions render the 3D scene correctly.
+#     "marimo==0.23.10",
+#     "anywidget==0.11.0",
+#     "wanderland==0.1.1",
 #     "numpy",
 #     "matplotlib",
-#     "wanderland",
 # ]
 # ///
 
@@ -892,8 +897,38 @@ def _():
     import matplotlib
     import matplotlib.pyplot as plt
     from matplotlib import patches
-    matplotlib.rcParams["font.sans-serif"] = ["Microsoft YaHei", "SimHei", "DejaVu Sans"]
+    matplotlib.rcParams["font.sans-serif"] = [
+        "Microsoft YaHei", "SimHei", "PingFang SC", "Noto Sans CJK SC",
+        "WenQuanYi Micro Hei", "DejaVu Sans",
+    ]
     matplotlib.rcParams["axes.unicode_minus"] = False
+
+    def _ensure_cjk_font():
+        """Make the Chinese plot labels render. A desktop (Windows/macOS) already has a
+        CJK font; a bare Linux kernel (molab) has none and would draw tofu boxes, so
+        fetch one once and register it. Failure is swallowed — worst case: boxes."""
+        from matplotlib import font_manager
+
+        _installed = {f.name for f in font_manager.fontManager.ttflist}
+        if _installed & {"Microsoft YaHei", "SimHei", "PingFang SC",
+                         "Noto Sans CJK SC", "WenQuanYi Micro Hei"}:
+            return
+        try:
+            import os
+            import tempfile
+            import urllib.request
+
+            _p = os.path.join(tempfile.gettempdir(), "wqy-microhei.ttc")
+            if not os.path.exists(_p):
+                urllib.request.urlretrieve(
+                    "https://cdn.jsdelivr.net/gh/anthonyfok/fonts-wqy-microhei/"
+                    "wqy-microhei.ttc", _p)
+            font_manager.fontManager.addfont(_p)
+            matplotlib.rcParams["font.sans-serif"] = ["WenQuanYi Micro Hei", "DejaVu Sans"]
+        except Exception:
+            pass
+
+    _ensure_cjk_font()
 
     # Wanderland is a published PyPI package, declared in the PEP 723 header above so
     # marimo.app / molab install it automatically. Locally: `pip install wanderland`.
